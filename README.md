@@ -36,16 +36,29 @@ flowchart LR
 
 ## 快速开始
 
+### 1. 安装 Python 3.11
+安装时勾选 `Add python.exe to PATH`。
+
+### 2. 装依赖
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
 Copy-Item .env.example .env
-docker compose up -d db
+```
+
+### 3. 数据库（二选一）
+
+- **A. Supabase（推荐，免 Docker）**：新建项目 → SQL Editor 执行 `create extension if not exists vector;` → 把连接串填到 `.env` 的 `DATABASE_URL`。
+- **B. 本地 Docker**：`docker compose up -d db`。
+
+### 4. 自检
+
+```powershell
 pytest -q
 ```
 
-没有 Docker：用 Supabase 免费版（开启 pgvector），把 `.env` 里的 `DATABASE_URL` 换成连接串。
 
 ## 评测
 
