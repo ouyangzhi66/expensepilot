@@ -1,12 +1,10 @@
 # ExpensePilot · 财务报销 Agent
 
-[![ci](https://github.com/YOUR_GITHUB/expensepilot/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB/expensepilot/actions/workflows/ci.yml)
-![python](https://img.shields.io/badge/python-3.11-blue)
-![license](https://img.shields.io/badge/license-MIT-green)
+[Gitee 仓库](https://gitee.com/ouyangzhi66/expensepilot) · [Issues](https://gitee.com/ouyangzhi66/expensepilot/issues) · [评测报告](docs/eval.md) · [开发日志](docs/log.md)
 
 > 员工一句话描述出差 / 招待费用，Agent 查制度、算额度、验发票、生成凭证草稿；超规则自动转人工。
 
-[Demo](TODO) · [3 分钟视频](TODO) · [评测报告](docs/eval.md) · [开发日志](docs/log.md)
+[Demo](TODO) · [3 分钟视频](TODO)
 
 ## 为什么不是又一个 RAG 聊天框
 
@@ -20,21 +18,25 @@
 
 ## 架构
 
-```mermaid
-flowchart LR
-    U[员工] --> UI[Streamlit]
-    UI --> API[FastAPI]
-    API --> G[LangGraph]
-    G --> P[policy_search]
-    G --> B[budget_check]
-    G --> V[voucher_create]
-    G --> H[ask_human]
-    P --> DB[(Postgres + pgvector)]
-    B --> DB
-    V --> DB
+```text
+员工
+  │
+  ▼
+Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pgvector
+                    │
+                    ├──► budget_check ──► Postgres
+                    ├──► voucher_create ──► Postgres
+                    └──► ask_human ──► 待办 / 审计日志
 ```
 
 ## 快速开始
+
+### 0. 克隆
+
+```powershell
+git clone https://gitee.com/ouyangzhi66/expensepilot.git
+cd expensepilot
+```
 
 ### 1. 安装 Python 3.11
 安装时勾选 `Add python.exe to PATH`。
@@ -56,8 +58,15 @@ Copy-Item .env.example .env
 ### 4. 自检
 
 ```powershell
-pytest -q
+.\scripts\check.ps1
 ```
+
+### 5. 分支与远程
+
+- 主分支：`master`（Gitee 默认）
+- 远程：`origin` → `https://gitee.com/ouyangzhi66/expensepilot.git`
+
+> Gitee 不跑 GitHub Actions。`.github/workflows/ci.yml` 只在以后镜像到 GitHub 时用；日常用 `scripts/check.ps1`，Gitee Go 可选，不影响交付。
 
 
 ## 评测
@@ -76,16 +85,16 @@ pytest -q
 
 ### MVP（10 天）
 
-- [ ] D01 仓库 / 合成数据 / 10 条评测集
+- [ ] D01 数据表 / 合成数据 / 10 条评测集
 - [ ] D02 制度 RAG：切分、embedding、pgvector、引用
 - [ ] D03 LangGraph 骨架 + `policy_search`
-- [ ] D04 `budget_check` / `profile_get` + seed SQL
+- [ ] D04 `budget_check` + seed SQL
 - [ ] D05 `voucher_create` + JSON Schema
 - [ ] D06 多轮槽位 + 缺信息追问
 - [ ] D07 Streamlit happy path
 - [ ] D08 人在回路 + 审计日志
 - [ ] D09 15 条评测 + top-3 修复
-- [ ] D10 Docker / 部署 / README / 3 分钟视频
+- [ ] D10 部署 / README / 3 分钟视频
 
 ### 加固（D11-D21）
 
@@ -93,14 +102,17 @@ pytest -q
 - [ ] 30 条评测 + 错误分类
 - [ ] Langfuse trace / 成本统计
 - [ ] Vue 3 前端（可选）
-- [ ] 1 页项目报告（GitHub Pages）
+- [ ] 1 页项目报告（Gitee Pages 或 `docs/report.md`）
+- [ ] Dockerfile / compose 一键起（面试讲容器化）
 
-## 每日 GitHub 流程
+## 每日 Gitee 流程
 
 1. 开工：把当天 issue 移到 Doing，写一句“今日目标”。
 2. 开发：每 30-45 分钟 commit 一次，Conventional Commits。
 3. 收工：更新 `docs/log.md`，关闭 issue，README 进度打勾。
-4. 每周日：打 tag（`v0.1.0`），写 Release notes。
+4. 每天 push 到 `master`；每周日打 tag（`v0.1.0`），写 Release notes。
+
+> 贡献度统计要求 `git config user.email` 与 Gitee 绑定邮箱一致。当前本机是 `1161655868@qq.com`，去 Gitee「设置 → 邮箱管理」确认已绑定，否则提交不会变绿。
 
 ## 仓库结构
 
@@ -109,9 +121,10 @@ expensepilot/
 ├─ src/expensepilot/      # Agent / tools / api
 ├─ eval/                  # 测试集与评测脚本
 ├─ docs/                  # 日志、评测、ADR
+├─ scripts/               # check.ps1 本地自检
 ├─ tests/                 # pytest
-├─ .github/               # CI + issue 模板
-└─ docker-compose.yml     # Postgres + pgvector
+├─ .github/               # GitHub 镜像用 CI + issue 模板
+└─ docker-compose.yml     # Postgres + pgvector（可选）
 ```
 
 ## License

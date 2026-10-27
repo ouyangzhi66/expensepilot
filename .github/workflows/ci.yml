@@ -1,3 +1,4 @@
+# 仅 GitHub 镜像使用；Gitee 用 scripts/check.ps1（Gitee Go 可选）
 name: ci
 
 on:
