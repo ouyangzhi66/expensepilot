@@ -63,13 +63,20 @@ python scripts/db_check.py
 
 看到 PostgreSQL 版本和 `pgvector: True` 即成功。
 
-### 4. 自检
+### 4. 初始化表和数据
+
+在 Supabase SQL Editor 依次执行：
+
+1. `db/schema.sql`
+2. `db/seed.sql`（会清空这 4 张表，仅用于演示数据）
+
+### 5. 自检
 
 ```powershell
 .\scripts\check.ps1
 ```
 
-### 5. 分支与远程
+### 6. 分支与远程
 
 - 主分支：`master`（Gitee 默认）
 - 远程：`origin` → `https://gitee.com/ouyangzhi66/expensepilot.git`
@@ -128,6 +135,7 @@ python scripts/db_check.py
 ```text
 expensepilot/
 ├─ src/expensepilot/      # Agent / tools / api
+├─ db/                    # schema.sql / seed.sql
 ├─ eval/                  # 测试集与评测脚本
 ├─ docs/                  # 日志、评测、ADR
 ├─ scripts/               # check.ps1 本地自检
