@@ -1,36 +1,48 @@
-﻿# ExpensePilot 路 璐㈠姟鎶ラ攢 Agent
+# ExpensePilot · 财务报销 Agent
 
-[Gitee 浠撳簱](https://gitee.com/ouyangzhi66/expensepilot) 路 [Issues](https://gitee.com/ouyangzhi66/expensepilot/issues) 路 [璇勬祴鎶ュ憡](docs/eval.md) 路 [寮€鍙戞棩蹇梋(docs/log.md)
+[Gitee 仓库](https://gitee.com/ouyangzhi66/expensepilot) · [Issues](https://gitee.com/ouyangzhi66/expensepilot/issues) · [评测报告](docs/eval.md) · [开发日志](docs/log.md)
 
-> 鍛樺伐涓€鍙ヨ瘽鎻忚堪鍑哄樊 / 鎷涘緟璐圭敤锛孉gent 鏌ュ埗搴︺€佺畻棰濆害銆侀獙鍙戠エ銆佺敓鎴愬嚟璇佽崏绋匡紱瓒呰鍒欒嚜鍔ㄨ浆浜哄伐銆?
-[Demo](TODO) 路 [3 鍒嗛挓瑙嗛](TODO)
+> 员工一句话描述出差 / 招待费用，Agent 查制度、算额度、验发票、生成凭证草稿；超规则自动转人工。
 
-## 涓轰粈涔堜笉鏄張涓€涓?RAG 鑱婂ぉ妗?
-鎶ラ攢鏄竴涓姝ヤ换鍔★細鏌ュ埗搴?鈫?鏌ラ搴?鈫?鏍￠獙鍙戠エ 鈫?鐢熸垚鍑瘉 鈫?浜哄伐纭銆傚崟杞?RAG 鍙兘鍥炵瓟鈥滀綇瀹夸笂闄愬灏戔€濓紝涓嶈兘瀹屾垚浠诲姟銆傝繖涓」鐩璇佹槑鐨勬槸锛?
-- 澶氬伐鍏风紪鎺掞紙7 涓伐鍏凤級
-- 澶氳疆妲戒綅濉厖涓庤拷闂?- 鏉′欢鍒嗘敮涓庝汉鍦ㄥ洖璺紙瓒呴檺 / 瓒婃潈杞汉宸ワ級
-- 鍙瘎娴嬶紙30 鏉″満鏅?+ 鎸囨爣锛?- 鍙娴嬶紙瀹¤鏃ュ織 / trace锛?
-## 鏋舵瀯
+[Demo](TODO) · [3 分钟视频](TODO)
+
+## 为什么不是又一个 RAG 聊天框
+
+报销是一个多步任务：查制度 → 查额度 → 校验发票 → 生成凭证 → 人工确认。单轮 RAG 只能回答“住宿上限多少”，不能完成任务。这个项目要证明的是：
+
+- 多工具编排（7 个工具）
+- 多轮槽位填充与追问
+- 条件分支与人在回路（超限 / 越权转人工）
+- 可评测（30 条场景 + 指标）
+- 可观测（审计日志 / trace）
+
+## 架构
 
 ```text
-鍛樺伐
-  鈹?  鈻?Streamlit UI 鈹€鈹€鈻?LangGraph 鈹€鈹€鈻?policy_search 鈹€鈹€鈻?Postgres + pgvector
-                    鈹?                    鈹溾攢鈹€鈻?budget_check 鈹€鈹€鈻?Postgres
-                    鈹溾攢鈹€鈻?voucher_create 鈹€鈹€鈻?Postgres
-                    鈹斺攢鈹€鈻?ask_human 鈹€鈹€鈻?寰呭姙 / 瀹¤鏃ュ織
+员工
+  │
+  ▼
+Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pgvector
+                    │
+                    ├──► budget_check ──► Postgres
+                    ├──► voucher_create ──► Postgres
+                    └──► ask_human ──► 待办 / 审计日志
 ```
 
-## 蹇€熷紑濮?
-### 0. 鍏嬮殕
+## 快速开始
+
+### 0. 克隆
 
 ```powershell
 git clone https://gitee.com/ouyangzhi66/expensepilot.git
 cd expensepilot
 ```
 
-### 1. 瀹夎 Python 3.11
-瀹夎鏃跺嬀閫?`Add python.exe to PATH`銆?
-### 2. 瑁呬緷璧?
+### 1. 安装 Python 3.11
+安装时勾选 `Add python.exe to PATH`。
+
+### 2. 装依赖
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -38,74 +50,92 @@ pip install -r requirements.txt -r requirements-dev.txt
 Copy-Item .env.example .env
 ```
 
-### 3. 鏁版嵁搴擄紙浜岄€変竴锛?
-- **A. Supabase锛堟帹鑽愶紝鍏?Docker锛?*锛氭柊寤洪」鐩?鈫?SQL Editor 鎵ц `create extension if not exists vector;` 鈫?鎶?Session Pooler 杩炴帴涓插～鍒?`.env` 鐨?`DATABASE_URL`銆?- **B. 鏈湴 Docker**锛歚docker compose up -d db`銆?
-楠岃瘉杩炴帴锛?
+### 3. 数据库（二选一）
+
+- **A. Supabase（推荐，免 Docker）**：新建项目 → SQL Editor 执行 `create extension if not exists vector;` → 把 Session Pooler 连接串填到 `.env` 的 `DATABASE_URL`。
+- **B. 本地 Docker**：`docker compose up -d db`。
+
+验证连接：
+
 ```powershell
 python scripts/db_check.py
 ```
 
-鐪嬪埌 PostgreSQL 鐗堟湰鍜?`pgvector: True` 鍗虫垚鍔熴€?
-### 4. 鑷
+看到 PostgreSQL 版本和 `pgvector: True` 即成功。
+
+### 4. 自检
 
 ```powershell
 .\scripts\check.ps1
 ```
 
-### 5. 鍒嗘敮涓庤繙绋?
-- 涓诲垎鏀細`master`锛圙itee 榛樿锛?- 杩滅▼锛歚origin` 鈫?`https://gitee.com/ouyangzhi66/expensepilot.git`
+### 5. 分支与远程
 
-> Gitee 涓嶈窇 GitHub Actions銆俙.github/workflows/ci.yml` 鍙湪浠ュ悗闀滃儚鍒?GitHub 鏃剁敤锛涙棩甯哥敤 `scripts/check.ps1`锛孏itee Go 鍙€夛紝涓嶅奖鍝嶄氦浠樸€?
+- 主分支：`master`（Gitee 默认）
+- 远程：`origin` → `https://gitee.com/ouyangzhi66/expensepilot.git`
 
-## 璇勬祴
+> Gitee 不跑 GitHub Actions。`.github/workflows/ci.yml` 只在以后镜像到 GitHub 时用；日常用 `scripts/check.ps1`，Gitee Go 可选，不影响交付。
 
-| 鎸囨爣 | 鐩爣 | 褰撳墠 |
+## 评测
+
+| 指标 | 目标 | 当前 |
 |---|---|---|
-| 浠诲姟瀹屾垚鐜?| 鈮?5% | TODO |
-| 鍑瘉瀛楁瀹屾暣鐜?| 鈮?5% | TODO |
-| 瓒呴檺 / 瓒婃潈鎷︽埅鐜?| 100% | TODO |
-| RAG 寮曠敤鍛戒腑鐜?| 鈮?0% | TODO |
-| P95 鏃跺欢 | 鈮?s | TODO |
+| 任务完成率 | ≥85% | TODO |
+| 凭证字段完整率 | ≥95% | TODO |
+| 超限 / 越权拦截率 | 100% | TODO |
+| RAG 引用命中率 | ≥90% | TODO |
+| P95 时延 | ≤3s | TODO |
 
-鍦烘櫙鍒嗗竷涓庣敤渚嬭 [docs/eval.md](docs/eval.md)銆乕eval/cases.csv](eval/cases.csv)銆?
+场景分布与用例见 [docs/eval.md](docs/eval.md)、[eval/cases.csv](eval/cases.csv)。
+
 ## Roadmap
 
-### MVP锛?0 澶╋級
+### MVP（10 天）
 
-- [ ] D01 鏁版嵁琛?/ 鍚堟垚鏁版嵁 / 10 鏉¤瘎娴嬮泦
-- [ ] D02 鍒跺害 RAG锛氬垏鍒嗐€乪mbedding銆乸gvector銆佸紩鐢?- [ ] D03 LangGraph 楠ㄦ灦 + `policy_search`
+- [ ] D01 数据表 / 合成数据 / 10 条评测集
+- [ ] D02 制度 RAG：切分、embedding、pgvector、引用
+- [ ] D03 LangGraph 骨架 + `policy_search`
 - [ ] D04 `budget_check` + seed SQL
 - [ ] D05 `voucher_create` + JSON Schema
-- [ ] D06 澶氳疆妲戒綅 + 缂轰俊鎭拷闂?- [ ] D07 Streamlit happy path
-- [ ] D08 浜哄湪鍥炶矾 + 瀹¤鏃ュ織
-- [ ] D09 15 鏉¤瘎娴?+ top-3 淇
-- [ ] D10 閮ㄧ讲 / README / 3 鍒嗛挓瑙嗛
+- [ ] D06 多轮槽位 + 缺信息追问
+- [ ] D07 Streamlit happy path
+- [ ] D08 人在回路 + 审计日志
+- [ ] D09 15 条评测 + top-3 修复
+- [ ] D10 部署 / README / 3 分钟视频
 
-### 鍔犲浐锛圖11-D21锛?
-- [ ] 鍙戠エ OCR + 绁ㄩ潰鏍￠獙
-- [ ] 30 鏉¤瘎娴?+ 閿欒鍒嗙被
-- [ ] Langfuse trace / 鎴愭湰缁熻
-- [ ] Vue 3 鍓嶇锛堝彲閫夛級
-- [ ] 1 椤甸」鐩姤鍛婏紙Gitee Pages 鎴?`docs/report.md`锛?- [ ] Dockerfile / compose 涓€閿捣锛堥潰璇曡瀹瑰櫒鍖栵級
+### 加固（D11-D21）
 
-## 姣忔棩 Gitee 娴佺▼
+- [ ] 发票 OCR + 票面校验
+- [ ] 30 条评测 + 错误分类
+- [ ] Langfuse trace / 成本统计
+- [ ] Vue 3 前端（可选）
+- [ ] 1 页项目报告（Gitee Pages 或 `docs/report.md`）
+- [ ] Dockerfile / compose 一键起（面试讲容器化）
 
-1. 寮€宸ワ細鎶婂綋澶?issue 绉诲埌 Doing锛屽啓涓€鍙モ€滀粖鏃ョ洰鏍団€濄€?2. 寮€鍙戯細姣?30-45 鍒嗛挓 commit 涓€娆★紝Conventional Commits銆?3. 鏀跺伐锛氭洿鏂?`docs/log.md`锛屽叧闂?issue锛孯EADME 杩涘害鎵撳嬀銆?4. 姣忓ぉ push 鍒?`master`锛涙瘡鍛ㄦ棩鎵?tag锛坄v0.1.0`锛夛紝鍐?Release notes銆?
-> 璐＄尞搴︾粺璁¤姹?`git config user.email` 涓?Gitee 缁戝畾閭涓€鑷淬€傚綋鍓嶆湰鏈烘槸 `1161655868@qq.com`锛屽幓 Gitee銆岃缃?鈫?閭绠＄悊銆嶇‘璁ゅ凡缁戝畾锛屽惁鍒欐彁浜や笉浼氬彉缁裤€?
-## 浠撳簱缁撴瀯
+## 每日 Gitee 流程
+
+1. 开工：把当天 issue 打开，写一句“今日目标”。
+2. 开发：每 30-45 分钟 commit 一次，Conventional Commits。
+3. 收工：更新 `docs/log.md`，关闭 issue，README 进度打勾。
+4. 每天 push 到 `master`；每周日打 tag（`v0.1.0`），写 Release notes。
+
+10 个 issue 的标题和正文见 [docs/issues.md](docs/issues.md)。
+
+> 贡献度统计要求 `git config user.email` 与 Gitee 绑定邮箱一致。当前本机是 `1161655868@qq.com`，去 Gitee「设置 → 邮箱管理」确认已绑定，否则提交不会变绿。
+
+## 仓库结构
 
 ```text
 expensepilot/
-鈹溾攢 src/expensepilot/      # Agent / tools / api
-鈹溾攢 eval/                  # 娴嬭瘯闆嗕笌璇勬祴鑴氭湰
-鈹溾攢 docs/                  # 鏃ュ織銆佽瘎娴嬨€丄DR
-鈹溾攢 scripts/               # check.ps1 鏈湴鑷
-鈹溾攢 tests/                 # pytest
-鈹溾攢 .github/               # GitHub 闀滃儚鐢?CI + issue 妯℃澘
-鈹斺攢 docker-compose.yml     # Postgres + pgvector锛堝彲閫夛級
+├─ src/expensepilot/      # Agent / tools / api
+├─ eval/                  # 测试集与评测脚本
+├─ docs/                  # 日志、评测、ADR
+├─ scripts/               # check.ps1 本地自检
+├─ tests/                 # pytest
+├─ .github/               # GitHub 镜像用 CI + issue 模板
+└─ docker-compose.yml     # Postgres + pgvector（可选）
 ```
 
 ## License
 
 MIT
-
