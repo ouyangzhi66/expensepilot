@@ -52,8 +52,16 @@ Copy-Item .env.example .env
 
 ### 3. 数据库（二选一）
 
-- **A. Supabase（推荐，免 Docker）**：新建项目 → SQL Editor 执行 `create extension if not exists vector;` → 把连接串填到 `.env` 的 `DATABASE_URL`。
+- **A. Supabase（推荐，免 Docker）**：新建项目 → SQL Editor 执行 `create extension if not exists vector;` → 把 Session Pooler 连接串填到 `.env` 的 `DATABASE_URL`。
 - **B. 本地 Docker**：`docker compose up -d db`。
+
+验证连接：
+
+```powershell
+python scripts/db_check.py
+```
+
+看到 PostgreSQL 版本和 `pgvector: True` 即成功。
 
 ### 4. 自检
 
