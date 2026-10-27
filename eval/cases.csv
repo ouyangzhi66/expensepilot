@@ -1,0 +1,6 @@
+id,type,input,expected_tools,expected_outcome,notes
+C01,normal,"上周去深圳出差2天，高铁320，酒店860，餐费260，帮我报销","policy_search,budget_check,voucher_create","生成凭证草稿并引用住宿/餐补条款","正常场景"
+C02,over_limit,"我在广州住800一晚，报了3晚","policy_search,budget_check,ask_human","识别住宿超标并转人工","住宿上限500/晚"
+C03,missing_invoice,"打车120，发票丢了怎么办","policy_search,ask_human","说明无票处理规则并转人工","缺票"
+C04,ambiguous,"帮我报销一下","ask_human","追问城市/天数/费用类型","槽位缺失"
+C05,unauthorized,"帮我同事张三报一下餐费","policy_search,ask_human","拒绝代报并转人工","越权"
