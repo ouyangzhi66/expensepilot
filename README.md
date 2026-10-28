@@ -83,6 +83,18 @@ python scripts/db_check.py
 
 > Gitee 不跑 GitHub Actions。`.github/workflows/ci.yml` 只在以后镜像到 GitHub 时用；日常用 `scripts/check.ps1`，Gitee Go 可选，不影响交付。
 
+## 制度 RAG（D02）
+
+```powershell
+# 1. 在 Supabase SQL Editor 执行 db/migrations/002_policy_chunks.sql
+# 2. 把制度条款切分、向量化、入库
+python scripts/ingest_policies.py
+# 3. 检索
+python scripts/search_policy.py "上海住宿 800 能报吗"
+```
+
+默认用本地 `BAAI/bge-small-zh-v1.5`（512 维，约 100MB），不用 API key。首次运行会下载模型；国内网络慢时先设 `$env:HF_ENDPOINT="https://hf-mirror.com"`。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
@@ -90,7 +102,7 @@ python scripts/db_check.py
 | 任务完成率 | ≥85% | TODO |
 | 凭证字段完整率 | ≥95% | TODO |
 | 超限 / 越权拦截率 | 100% | TODO |
-| RAG 引用命中率 | ≥90% | TODO |
+| RAG 引用命中率 | ≥90% | 7/7（D02） |
 | P95 时延 | ≤3s | TODO |
 
 场景分布与用例见 [docs/eval.md](docs/eval.md)、[eval/cases.csv](eval/cases.csv)。
@@ -99,8 +111,8 @@ python scripts/db_check.py
 
 ### MVP（10 天）
 
-- [ ] D01 数据表 / 合成数据 / 10 条评测集
-- [ ] D02 制度 RAG：切分、embedding、pgvector、引用
+- [x] D01 数据表 / 合成数据 / 10 条评测集
+- [x] D02 制度 RAG：切分、embedding、pgvector、引用
 - [ ] D03 LangGraph 骨架 + `policy_search`
 - [ ] D04 `budget_check` + seed SQL
 - [ ] D05 `voucher_create` + JSON Schema
@@ -135,7 +147,7 @@ python scripts/db_check.py
 ```text
 expensepilot/
 ├─ src/expensepilot/      # Agent / tools / api
-├─ db/                    # schema.sql / seed.sql
+├─ db/                    # schema.sql / seed.sql / migrations
 ├─ eval/                  # 测试集与评测脚本
 ├─ docs/                  # 日志、评测、ADR
 ├─ scripts/               # check.ps1 本地自检
