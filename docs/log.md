@@ -10,3 +10,4 @@
 | 2026-10-29 | D03 | LangGraph 骨架 + policy_search | agent↔tools 跑通；引用、拒答、闲聊三条验收通过 | - | D04 budget_check | `16d6d53` |
 | 2026-10-29 | D04 | budget_check + 预算判断 | 3 条验收通过：余额 7100、张三不超预算、李四超 600 | - | D05 voucher_create | `940d474` |
 | 2026-10-29 | D05 | voucher_create + JSON Schema | 8/8 字段、Schema 通过、税额 45.28、引用 POL-001 | - | D06 多轮槽位 | `c167993` |
+| 2026-10-29 | D06 | 多轮槽位 + 缺信息追问 | 5 条模糊输入均正确追问；两轮补全后生成凭证（POL-001） | - | D07 Streamlit | `c554d69` |
