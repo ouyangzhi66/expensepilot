@@ -1,6 +1,6 @@
 # ExpensePilot · 财务报销 Agent
 
-[Gitee 仓库](https://gitee.com/ouyangzhi66/expensepilot) · [Issues](https://gitee.com/ouyangzhi66/expensepilot/issues) · [评测报告](docs/eval.md) · [开发日志](docs/log.md)
+[Live Demo](https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app) · [Gitee 仓库](https://gitee.com/ouyangzhi66/expensepilot) · [GitHub](https://github.com/ouyangzhi66/expensepilot) · [Issues](https://gitee.com/ouyangzhi66/expensepilot/issues) · [评测报告](docs/eval.md) · [开发日志](docs/log.md)
 
 > 员工一句话描述出差 / 招待费用，Agent 查制度、算额度、验发票、生成凭证草稿；超规则自动转人工。
 
@@ -31,6 +31,8 @@ Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pg
 ```
 
 ## 部署
+
+线上演示：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app
 
 Streamlit Community Cloud 部署步骤见 [docs/deploy.md](docs/deploy.md)；录视频用 [docs/demo-script.md](docs/demo-script.md)。
 
@@ -185,7 +187,8 @@ python scripts/eval_agent.py
 - [x] D07 Streamlit happy path
 - [x] D08 人在回路 + 审计日志
 - [x] D09 15 条评测 + top-3 修复
-- [ ] D10 部署 / README / 3 分钟视频
+- [x] D10 部署 + README
+- [ ] D10 3 分钟视频
 
 ### 加固（D11-D21）
 
