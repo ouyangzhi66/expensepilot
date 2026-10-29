@@ -84,3 +84,12 @@ MVP 先做 15 条（正常 6、超限 3、缺票 2、模糊 2、越权 2），D0
 | 第二轮补全并回答 | 通过 |
 | 第三轮生成凭证 | 通过，右侧显示草稿 |
 | 工具调用 | policy_search / budget_check / voucher_create 均可见 |
+
+## 人在回路（D08）
+
+| 场景 | 工具调用 | 结果 |
+|---|---|---|
+| 李四 5000 住宿 | policy_search + budget_check + escalate_to_human | 工单 pending，不生成凭证 |
+| 代同事张三报销 | escalate_to_human | 工单 pending |
+| 张三 800 正常 | policy_search + budget_check + voucher_create | 不转人工，生成草稿 |
+| 审计 | 所有工具调用 | `audit_logs` 记录 thread_id / tool / decision |

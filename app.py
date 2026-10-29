@@ -55,6 +55,7 @@ def new_session() -> None:
     st.session_state.citations = []
     st.session_state.voucher = None
     st.session_state.last_tools = []
+    st.session_state.escalation = None
     st.session_state.turn = 0
     st.session_state.seen = 0
 
@@ -65,6 +66,7 @@ for key, value in {
     "citations": [],
     "voucher": None,
     "last_tools": [],
+    "escalation": None,
     "turn": 0,
     "seen": 0,
 }.items():
@@ -118,6 +120,8 @@ def process(prompt: str) -> None:
                 st.session_state.history.append(("assistant", message.content))
         elif isinstance(message, ToolMessage):
             results.append(message.content)
+            if "已转人工，工单" in message.content:
+                st.session_state.escalation = message.content
             try:
                 data = json.loads(message.content)
             except (json.JSONDecodeError, TypeError):
@@ -169,6 +173,12 @@ with st.sidebar:
             st.json(st.session_state.voucher)
         else:
             st.caption("还没有生成")
+
+    with st.expander("待人工", expanded=False):
+        if st.session_state.escalation:
+            st.warning(st.session_state.escalation)
+        else:
+            st.caption("没有待人工工单")
 
     st.divider()
     st.subheader("示例")

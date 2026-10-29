@@ -12,14 +12,21 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
 )
+from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
+from expensepilot.audit import current_thread_id, log_event
 from expensepilot.config import MODEL_NAME, OPENAI_API_KEY, OPENAI_BASE_URL
 from expensepilot.slots import build_question, merge_slots, missing_slots, parse_slot_json
 from expensepilot.state import AgentState
-from expensepilot.tools import budget_check, policy_search, voucher_create
+from expensepilot.tools import (
+    budget_check,
+    escalate_to_human,
+    policy_search,
+    voucher_create,
+)
 
 SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
 
@@ -36,12 +43,19 @@ SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
    把已引用的 POL 编号传给 citations，至少 1 条。
 9. 凭证生成后，说明这是草稿，8 个必填字段要完整，需人工确认。
 10. 下方会给出“当前槽位”。槽位已齐时不要重复追问，直接按槽位调用工具。
+11. 出现以下情况必须调用 escalate_to_human：预算超支、代报/越权、制度冲突、
+    信息不足无法判断、用户明确要求人工。不要自行批准。
+12. 转人工后说明工单号和原因，不要重复提交。
+13. 工具调用会自动写审计日志，不要声称自己写了日志。
+14. 用户说“替/代/帮别人报销”时，不要先追问关系，直接调用 escalate_to_human，
+    reason 写“代他人报销”，并带上 employee 和 amount。
 """
 
 TOOLS = {
     "policy_search": policy_search,
     "budget_check": budget_check,
     "voucher_create": voucher_create,
+    "escalate_to_human": escalate_to_human,
 }
 
 
@@ -83,7 +97,9 @@ def build_graph():
         temperature=0,
         max_tokens=300,
     )
-    llm_with_tools = llm.bind_tools([policy_search, budget_check, voucher_create])
+    llm_with_tools = llm.bind_tools(
+        [policy_search, budget_check, voucher_create, escalate_to_human]
+    )
 
     def extract_node(state: AgentState) -> dict:
         messages = state["messages"]
@@ -129,12 +145,23 @@ def build_graph():
             update["citations"] = cited
         return update
 
-    def tool_node(state: AgentState) -> dict:
+    def tool_node(state: AgentState, config: RunnableConfig) -> dict:
         last = state["messages"][-1]
+        thread_id = config.get("configurable", {}).get("thread_id", "")
+        token = current_thread_id.set(thread_id)
         outputs = []
-        for call in last.tool_calls:
-            result = TOOLS[call["name"]].invoke(call["args"])
-            outputs.append(ToolMessage(content=result, tool_call_id=call["id"]))
+        try:
+            for call in last.tool_calls:
+                result = TOOLS[call["name"]].invoke(call["args"])
+                decision = (
+                    "pending_human"
+                    if call["name"] == "escalate_to_human"
+                    else "allowed"
+                )
+                log_event("tool_call", call["name"], call["args"], result, decision)
+                outputs.append(ToolMessage(content=result, tool_call_id=call["id"]))
+        finally:
+            current_thread_id.reset(token)
         return {"messages": outputs}
 
     def should_continue(state: AgentState) -> str:

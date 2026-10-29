@@ -135,6 +135,16 @@ streamlit run app.py
 
 打开 http://localhost:8501 。左侧显示槽位、引用、本轮工具调用和凭证草稿，右侧聊天。
 
+## 人在回路（D08）
+
+先执行 `db/migrations/003_audit_and_approvals.sql`。
+
+```powershell
+python scripts/ask.py "李四，上海，2026-10-12到2026-10-13，住宿5000，帮我生成凭证草稿"
+```
+
+超预算/代报/低置信时调用 `escalate_to_human` 生成工单，不直接出凭证；每次工具调用写入 `audit_logs`。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
@@ -158,7 +168,7 @@ streamlit run app.py
 - [x] D05 `voucher_create` + JSON Schema
 - [x] D06 多轮槽位 + 缺信息追问
 - [x] D07 Streamlit happy path
-- [ ] D08 人在回路 + 审计日志
+- [x] D08 人在回路 + 审计日志
 - [ ] D09 15 条评测 + top-3 修复
 - [ ] D10 部署 / README / 3 分钟视频
 
