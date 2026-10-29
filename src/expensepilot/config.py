@@ -25,7 +25,7 @@ def _load_streamlit_secrets() -> None:
     try:
         import streamlit as st
 
-        secrets = dict(st.secrets)
+        secrets = st.secrets.to_dict()
     except Exception:  # noqa: BLE001 - CLI/bare mode has no secrets
         return
 

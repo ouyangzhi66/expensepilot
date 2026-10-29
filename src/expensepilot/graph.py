@@ -103,7 +103,10 @@ def _slot_prompt(current: dict, transcript: str) -> str:
 
 def build_graph():
     if not OPENAI_API_KEY or OPENAI_API_KEY == "sk-xxx":
-        raise RuntimeError("OPENAI_API_KEY is not set; edit .env first.")
+        raise RuntimeError(
+            "OPENAI_API_KEY is not set: local edit .env; "
+            "Streamlit Cloud add Secrets and reboot."
+        )
 
     llm = ChatOpenAI(
         model=MODEL_NAME,
