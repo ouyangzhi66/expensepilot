@@ -1,4 +1,4 @@
-"""LangGraph wiring: agent ↔ policy_search / budget_check tools."""
+"""LangGraph wiring: agent ↔ policy / budget / voucher tools."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from langgraph.graph import END, START, StateGraph
 
 from expensepilot.config import MODEL_NAME, OPENAI_API_KEY, OPENAI_BASE_URL
 from expensepilot.state import AgentState
-from expensepilot.tools import budget_check, policy_search
+from expensepilot.tools import budget_check, policy_search, voucher_create
 
 SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
 
@@ -23,9 +23,16 @@ SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
 6. 问题涉及部门/个人预算、剩余额度、会不会超预算时，必须调用 budget_check；
    同时涉及制度上限时，policy_search 和 budget_check 都要调用。
 7. 预算数字以 budget_check 返回为准，不要自己算；制度上限和预算余额要分开说。
+8. 用户要求生成凭证/报销单/凭证草稿时，先完成 policy_search 和 budget_check，再调用 voucher_create；
+   把已引用的 POL 编号传给 citations，至少 1 条。
+9. 凭证生成后，说明这是草稿，8 个必填字段要完整，需人工确认。
 """
 
-TOOLS = {"policy_search": policy_search, "budget_check": budget_check}
+TOOLS = {
+    "policy_search": policy_search,
+    "budget_check": budget_check,
+    "voucher_create": voucher_create,
+}
 
 
 def build_graph():
@@ -38,7 +45,7 @@ def build_graph():
         base_url=OPENAI_BASE_URL,
         temperature=0,
     )
-    llm_with_tools = llm.bind_tools([policy_search, budget_check])
+    llm_with_tools = llm.bind_tools([policy_search, budget_check, voucher_create])
 
     def agent_node(state: AgentState) -> dict:
         response = llm_with_tools.invoke(

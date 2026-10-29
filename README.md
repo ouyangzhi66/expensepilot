@@ -111,12 +111,20 @@ python scripts/ask.py "李四再报5000住宿呢"
 
 Agent 会同时调用 `policy_search` 和 `budget_check`，把制度上限和部门余额分开回答。
 
+## 凭证草稿（D05）
+
+```powershell
+python scripts/ask.py "帮张三生成一张上海住宿800元的凭证草稿，2026-10-12到2026-10-13，引用POL-001"
+```
+
+`voucher_create` 生成 8 个必填字段，并用 `schemas/voucher.schema.json` 校验；只返回 JSON 草稿，不写库，最终需人工确认。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
 |---|---|---|
 | 任务完成率 | ≥85% | TODO |
-| 凭证字段完整率 | ≥95% | TODO |
+| 凭证字段完整率 | ≥95% | 8/8（D05） |
 | 超限 / 越权拦截率 | 100% | TODO |
 | RAG 引用命中率 | ≥90% | 7/7（D02） |
 | P95 时延 | ≤3s | TODO |
@@ -131,7 +139,7 @@ Agent 会同时调用 `policy_search` 和 `budget_check`，把制度上限和部
 - [x] D02 制度 RAG：切分、embedding、pgvector、引用
 - [x] D03 LangGraph 骨架 + `policy_search`
 - [x] D04 `budget_check` + seed SQL
-- [ ] D05 `voucher_create` + JSON Schema
+- [x] D05 `voucher_create` + JSON Schema
 - [ ] D06 多轮槽位 + 缺信息追问
 - [ ] D07 Streamlit happy path
 - [ ] D08 人在回路 + 审计日志
@@ -164,6 +172,7 @@ Agent 会同时调用 `policy_search` 和 `budget_check`，把制度上限和部
 expensepilot/
 ├─ src/expensepilot/      # Agent / tools / api
 ├─ db/                    # schema.sql / seed.sql / migrations
+├─ schemas/               # voucher.schema.json
 ├─ eval/                  # 测试集与评测脚本
 ├─ docs/                  # 日志、评测、ADR
 ├─ scripts/               # check.ps1 本地自检

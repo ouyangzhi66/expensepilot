@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VoucherDraft",
+  "type": "object",
+  "required": [
+    "voucher_no",
+    "employee_no",
+    "employee_name",
+    "department",
+    "category",
+    "amount",
+    "tax_amount",
+    "summary",
+    "account_subject",
+    "citations",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "voucher_no": { "type": "string", "minLength": 1 },
+    "employee_no": { "type": "string", "minLength": 1 },
+    "employee_name": { "type": "string", "minLength": 1 },
+    "department": { "type": "string", "minLength": 1 },
+    "category": { "enum": ["transport", "hotel", "meal", "other"] },
+    "amount": { "type": "number", "exclusiveMinimum": 0 },
+    "tax_amount": { "type": "number", "minimum": 0 },
+    "summary": { "type": "string", "minLength": 1 },
+    "account_subject": { "type": "string", "minLength": 1 },
+    "citations": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^POL-[0-9]{3}$" },
+      "minItems": 1
+    },
+    "trip_city": { "type": "string" },
+    "start_date": { "type": ["string", "null"] },
+    "end_date": { "type": ["string", "null"] },
+    "invoice_no": { "type": ["string", "null"] },
+    "status": { "enum": ["draft"] },
+    "created_at": { "type": "string" }
+  },
+  "additionalProperties": false
+}
