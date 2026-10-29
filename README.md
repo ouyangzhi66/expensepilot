@@ -30,6 +30,18 @@ Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pg
                     └──► escalate_to_human ──► 工单 / 审计日志
 ```
 
+## 线上效果
+
+正常单：一句话补齐槽位 → 查制度 → 查预算 → 生成凭证草稿（8 个字段，标注「待补发票」）。
+
+![正常单：生成凭证草稿](docs/screenshots/live-normal.png)
+
+异常单：超预算 / 超制度上限 → 不出凭证，直接转人工并给出工单号与依据条款。
+
+![异常单：转人工](docs/screenshots/live-escalate.png)
+
+> 以上截图来自 Streamlit Cloud 线上实例（2026-10-29），数据为合成数据。
+
 ## 部署
 
 线上演示：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app
@@ -40,7 +52,7 @@ Streamlit Community Cloud 部署步骤见 [docs/deploy.md](docs/deploy.md)。
 
 3 分钟演示（正常单 → 超限转人工 → 评测与代码）。录制脚本见 [docs/demo-script.md](docs/demo-script.md)；视频链接：待补充。
 
-> 最近一次线上复验：2026-10-29，首页正常渲染、槽位 / 引用 / 工具调用侧栏无报错。
+> 最近一次线上复验：2026-10-29，正常单（生成凭证草稿）与异常单（转人工）两条主路径均跑通。
 
 应用通过 `st.secrets` 读取 Supabase 连接串和 API key，`.env` 只用于本地。
 

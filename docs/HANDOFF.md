@@ -9,7 +9,7 @@ ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、ta
 ## 关键路径与链接
 
 - 项目目录：`D:\deeekseek工作区\expensepilot`
-- 线上应用：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app（2026-10-29 复验：首页正常渲染）
+- 线上应用：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app（2026-10-29 复验：正常单生成凭证 `V2026...AE78`、异常单转人工 `H2026...0617`，截图在 `docs/screenshots/`）
 - Gitee（主仓库）：https://gitee.com/ouyangzhi66/expensepilot
 - GitHub（部署镜像）：https://github.com/ouyangzhi66/expensepilot
 - 最新提交：`git log -1`（D10 收尾：指标回填 + 线上复验 + tag）
