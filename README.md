@@ -4,7 +4,7 @@
 
 > 员工一句话描述出差 / 招待费用，Agent 查制度、算额度、验发票、生成凭证草稿；超规则自动转人工。
 
-[Demo](TODO) · [3 分钟视频](TODO)
+[部署说明](docs/deploy.md) · [3 分钟演示脚本](docs/demo-script.md) · [评测报告](docs/eval.md) · [开发日志](docs/log.md)
 
 ## 为什么不是又一个 RAG 聊天框
 
@@ -29,6 +29,12 @@ Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pg
                     ├──► voucher_create ──► Postgres
                     └──► escalate_to_human ──► 工单 / 审计日志
 ```
+
+## 部署
+
+Streamlit Community Cloud 部署步骤见 [docs/deploy.md](docs/deploy.md)；录视频用 [docs/demo-script.md](docs/demo-script.md)。
+
+应用通过 `st.secrets` 读取 Supabase 连接串和 API key，`.env` 只用于本地。
 
 ## 快速开始
 
@@ -210,9 +216,11 @@ expensepilot/
 ├─ db/                    # schema.sql / seed.sql / migrations
 ├─ schemas/               # voucher.schema.json
 ├─ eval/                  # 测试集与评测脚本
-├─ docs/                  # 日志、评测、ADR
+├─ docs/                  # 部署、演示脚本、日志、评测、ADR
 ├─ scripts/               # check.ps1 本地自检
 ├─ tests/                 # pytest
+├─ runtime.txt            # Streamlit Cloud Python 版本
+├─ packages.txt           # 系统依赖（libgomp1）
 ├─ .github/               # GitHub 镜像用 CI + issue 模板
 └─ docker-compose.yml     # Postgres + pgvector（可选）
 ```
