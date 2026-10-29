@@ -1,14 +1,23 @@
-"""LangGraph wiring: agent ↔ policy / budget / voucher tools."""
+"""LangGraph wiring: slot filling → agent ↔ tools."""
 
 from __future__ import annotations
 
+import json
 import re
+from datetime import date
 
-from langchain_core.messages import AIMessage, SystemMessage, ToolMessage
+from langchain_core.messages import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from expensepilot.config import MODEL_NAME, OPENAI_API_KEY, OPENAI_BASE_URL
+from expensepilot.slots import build_question, merge_slots, missing_slots, parse_slot_json
 from expensepilot.state import AgentState
 from expensepilot.tools import budget_check, policy_search, voucher_create
 
@@ -26,6 +35,7 @@ SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
 8. 用户要求生成凭证/报销单/凭证草稿时，先完成 policy_search 和 budget_check，再调用 voucher_create；
    把已引用的 POL 编号传给 citations，至少 1 条。
 9. 凭证生成后，说明这是草稿，8 个必填字段要完整，需人工确认。
+10. 下方会给出“当前槽位”。槽位已齐时不要重复追问，直接按槽位调用工具。
 """
 
 TOOLS = {
@@ -33,6 +43,27 @@ TOOLS = {
     "budget_check": budget_check,
     "voucher_create": voucher_create,
 }
+
+
+def _slot_prompt(current: dict, transcript: str) -> str:
+    return f"""你是报销槽位抽取器。今天是 {date.today().isoformat()}。
+
+从对话中抽取报销信息，只输出一个 JSON 对象，不要 markdown，不要解释。
+
+字段：
+- employee: 报销人姓名或工号
+- trip_city: 出差城市
+- start_date: 开始日期，YYYY-MM-DD
+- end_date: 结束日期，YYYY-MM-DD
+- category: 只能是 transport / hotel / meal / other
+- amount: 数字，单位元
+- invoice_no: 发票号
+
+没有出现或不确定的字段填 null。用户说“住宿”就填 hotel，“交通/高铁/打车”填 transport，“餐费/招待”填 meal。
+已知槽位：{json.dumps(current, ensure_ascii=False)}
+对话：
+{transcript}
+"""
 
 
 def build_graph():
@@ -45,15 +76,53 @@ def build_graph():
         base_url=OPENAI_BASE_URL,
         temperature=0,
     )
+    slot_llm = ChatOpenAI(
+        model=MODEL_NAME,
+        api_key=OPENAI_API_KEY,
+        base_url=OPENAI_BASE_URL,
+        temperature=0,
+        max_tokens=300,
+    )
     llm_with_tools = llm.bind_tools([policy_search, budget_check, voucher_create])
 
+    def extract_node(state: AgentState) -> dict:
+        messages = state["messages"]
+        transcript = []
+        for message in messages[-8:]:
+            if isinstance(message, HumanMessage):
+                role = "用户"
+            elif isinstance(message, AIMessage):
+                role = "助手"
+            else:
+                continue
+            content = message.content if isinstance(message.content, str) else ""
+            if content:
+                transcript.append(f"{role}：{content}")
+
+        prompt = _slot_prompt(dict(state.get("slots", {})), "\n".join(transcript))
+        response = slot_llm.invoke([SystemMessage(content=prompt)])
+        content = response.content if isinstance(response.content, str) else ""
+        update = parse_slot_json(content)
+        return {"slots": merge_slots(dict(state.get("slots", {})), update)}
+
+    def ask_node(state: AgentState) -> dict:
+        missing = missing_slots(dict(state.get("slots", {})))
+        return {"messages": [AIMessage(content=build_question(missing))]}
+
+    def route_after_extract(state: AgentState) -> str:
+        return "ask" if missing_slots(dict(state.get("slots", {}))) else "agent"
+
     def agent_node(state: AgentState) -> dict:
+        slots_text = json.dumps(state.get("slots", {}), ensure_ascii=False)
         response = llm_with_tools.invoke(
-            [SystemMessage(content=SYSTEM_PROMPT), *state["messages"]]
+            [
+                SystemMessage(content=SYSTEM_PROMPT),
+                SystemMessage(content=f"当前槽位：{slots_text}"),
+                *state["messages"],
+            ]
         )
         update: dict = {"messages": [response]}
 
-        # 最终回答落定后，只把回答里真正引用的条款记进 citations。
         if isinstance(response, AIMessage) and not response.tool_calls:
             content = response.content if isinstance(response.content, str) else ""
             cited = list(dict.fromkeys(re.findall(r"POL-\d{3}", content)))
@@ -75,9 +144,17 @@ def build_graph():
         return END
 
     builder = StateGraph(AgentState)
+    builder.add_node("extract", extract_node)
+    builder.add_node("ask", ask_node)
     builder.add_node("agent", agent_node)
     builder.add_node("tools", tool_node)
-    builder.add_edge(START, "agent")
+
+    builder.add_edge(START, "extract")
+    builder.add_conditional_edges(
+        "extract", route_after_extract, {"ask": "ask", "agent": "agent"}
+    )
+    builder.add_edge("ask", END)
     builder.add_conditional_edges("agent", should_continue, {"tools": "tools", END: END})
     builder.add_edge("tools", "agent")
-    return builder.compile()
+
+    return builder.compile(checkpointer=MemorySaver())

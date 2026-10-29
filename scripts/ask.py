@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -15,12 +16,14 @@ if __name__ == "__main__":
         question = input("问题：").strip()
 
     graph = build_graph()
+    config = {"configurable": {"thread_id": f"ask-{uuid4().hex[:8]}"}}
     result = graph.invoke(
         {
             "messages": [HumanMessage(content=question)],
             "citations": [],
             "slots": {},
-        }
+        },
+        config,
     )
 
     print(f"\n问题：{question}\n")
@@ -34,4 +37,5 @@ if __name__ == "__main__":
             preview = message.content[:300].replace("\n", " ")
             print(f"[tool_result] {preview}...")
 
-    print(f"\ncitations: {result.get('citations', [])}")
+    print(f"\nslots: {result.get('slots', {})}")
+    print(f"citations: {result.get('citations', [])}")

@@ -119,6 +119,14 @@ python scripts/ask.py "帮张三生成一张上海住宿800元的凭证草稿，
 
 `voucher_create` 生成 8 个必填字段，并用 `schemas/voucher.schema.json` 校验；只返回 JSON 草稿，不写库，最终需人工确认。
 
+## 多轮槽位（D06）
+
+```powershell
+python scripts/chat.py
+```
+
+信息不全时先追问；槽位齐了才查制度/预算/生成凭证。`ask.py` 适合单轮，`chat.py` 用于多轮。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
@@ -140,7 +148,7 @@ python scripts/ask.py "帮张三生成一张上海住宿800元的凭证草稿，
 - [x] D03 LangGraph 骨架 + `policy_search`
 - [x] D04 `budget_check` + seed SQL
 - [x] D05 `voucher_create` + JSON Schema
-- [ ] D06 多轮槽位 + 缺信息追问
+- [x] D06 多轮槽位 + 缺信息追问
 - [ ] D07 Streamlit happy path
 - [ ] D08 人在回路 + 审计日志
 - [ ] D09 15 条评测 + top-3 修复
