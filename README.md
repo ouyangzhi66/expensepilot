@@ -127,6 +127,14 @@ python scripts/chat.py
 
 信息不全时先追问；槽位齐了才查制度/预算/生成凭证。`ask.py` 适合单轮，`chat.py` 用于多轮。
 
+## 网页界面（D07）
+
+```powershell
+streamlit run app.py
+```
+
+打开 http://localhost:8501 。左侧显示槽位、引用、本轮工具调用和凭证草稿，右侧聊天。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
@@ -149,7 +157,7 @@ python scripts/chat.py
 - [x] D04 `budget_check` + seed SQL
 - [x] D05 `voucher_create` + JSON Schema
 - [x] D06 多轮槽位 + 缺信息追问
-- [ ] D07 Streamlit happy path
+- [x] D07 Streamlit happy path
 - [ ] D08 人在回路 + 审计日志
 - [ ] D09 15 条评测 + top-3 修复
 - [ ] D10 部署 / README / 3 分钟视频
@@ -178,6 +186,7 @@ python scripts/chat.py
 
 ```text
 expensepilot/
+├─ app.py                 # Streamlit 页面
 ├─ src/expensepilot/      # Agent / tools / api
 ├─ db/                    # schema.sql / seed.sql / migrations
 ├─ schemas/               # voucher.schema.json
