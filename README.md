@@ -103,6 +103,14 @@ python scripts/ask.py "上海住宿800能报吗"
 
 Agent 先调用 `policy_search` 查条款，再基于条款回答；回答里真正引用的 `POL-xxx` 会记进 `citations`。
 
+## 预算查询（D04）
+
+```powershell
+python scripts/ask.py "李四再报5000住宿呢"
+```
+
+Agent 会同时调用 `policy_search` 和 `budget_check`，把制度上限和部门余额分开回答。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
@@ -122,7 +130,7 @@ Agent 先调用 `policy_search` 查条款，再基于条款回答；回答里真
 - [x] D01 数据表 / 合成数据 / 10 条评测集
 - [x] D02 制度 RAG：切分、embedding、pgvector、引用
 - [x] D03 LangGraph 骨架 + `policy_search`
-- [ ] D04 `budget_check` + seed SQL
+- [x] D04 `budget_check` + seed SQL
 - [ ] D05 `voucher_create` + JSON Schema
 - [ ] D06 多轮槽位 + 缺信息追问
 - [ ] D07 Streamlit happy path
@@ -163,6 +171,13 @@ expensepilot/
 ├─ .github/               # GitHub 镜像用 CI + issue 模板
 └─ docker-compose.yml     # Postgres + pgvector（可选）
 ```
+
+## 数据与隐私
+
+- 仓库只含合成数据：姓名、发票号、金额均为虚构。
+- 不提交真实姓名、手机号、身份证、银行卡、工资、真实发票、API key、数据库连接串。
+- `.env` 已忽略；截图前把姓名、金额、key 打码。
+- Supabase 本身可以存真实财务数据（配合 RLS、权限、备份），但本项目演示仍用合成数据，避免误传。
 
 ## License
 

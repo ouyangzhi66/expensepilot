@@ -1,4 +1,4 @@
-"""LangGraph wiring: agent ↔ policy_search tool."""
+"""LangGraph wiring: agent ↔ policy_search / budget_check tools."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from langgraph.graph import END, START, StateGraph
 
 from expensepilot.config import MODEL_NAME, OPENAI_API_KEY, OPENAI_BASE_URL
 from expensepilot.state import AgentState
-from expensepilot.tools import policy_search
+from expensepilot.tools import budget_check, policy_search
 
 SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
 
@@ -20,7 +20,12 @@ SYSTEM_PROMPT = """你是 ExpensePilot，一个财务报销助手。
 3. 制度里没有的，明确说“制度里没有相关规定”，不要编。
 4. 与报销无关的问题，说明你只处理报销和制度问题。
 5. 不要替用户做最终审批；不确定时建议转人工。
+6. 问题涉及部门/个人预算、剩余额度、会不会超预算时，必须调用 budget_check；
+   同时涉及制度上限时，policy_search 和 budget_check 都要调用。
+7. 预算数字以 budget_check 返回为准，不要自己算；制度上限和预算余额要分开说。
 """
+
+TOOLS = {"policy_search": policy_search, "budget_check": budget_check}
 
 
 def build_graph():
@@ -33,7 +38,7 @@ def build_graph():
         base_url=OPENAI_BASE_URL,
         temperature=0,
     )
-    llm_with_tools = llm.bind_tools([policy_search])
+    llm_with_tools = llm.bind_tools([policy_search, budget_check])
 
     def agent_node(state: AgentState) -> dict:
         response = llm_with_tools.invoke(
@@ -52,7 +57,7 @@ def build_graph():
         last = state["messages"][-1]
         outputs = []
         for call in last.tool_calls:
-            result = policy_search.invoke(call["args"])
+            result = TOOLS[call["name"]].invoke(call["args"])
             outputs.append(ToolMessage(content=result, tool_call_id=call["id"]))
         return {"messages": outputs}
 
