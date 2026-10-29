@@ -11,7 +11,7 @@ ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、ta
 - 项目目录：`D:\deeekseek工作区\expensepilot`
 - 线上应用：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app（2026-10-29 复验：正常单生成凭证 `V2026...AE78`、异常单转人工 `H2026...0617`，截图在 `docs/screenshots/`）
 - Gitee（主仓库）：https://gitee.com/ouyangzhi66/expensepilot
-- GitHub（部署镜像）：https://github.com/ouyangzhi66/expensepilot
+- GitHub（部署镜像）：https://github.com/ouyangzhi66/expensepilot（2026-10-29 已与 Gitee 对齐到同一提交）
 - 最新提交：`git log -1`（D10 收尾：指标回填 + 线上复验 + tag）
 - 简历新版：`D:\简历\2023-软件工程-欧阳智-Java后端-简历-v2.pdf`
 - 简历脚本：`D:\deeekseek工作区\build_resume.py`
@@ -60,13 +60,13 @@ streamlit run app.py
 1. 按 `docs/demo-script.md` 录 3 分钟视频，传 B 站/YouTube。
 2. 把视频链接填进 README「演示视频」，D10 打勾，关 D10 issue：
    https://gitee.com/ouyangzhi66/expensepilot/issues/IKQRWQ
-3. GitHub 上的 README 还是旧版；GitHub 能打开时，把最新 `README.md` 再上传一次。
+3. GitHub 镜像已对齐（`git push github master --force`，`src/` 与本地一致）；下次改动后记得再同步一次。
 4. 可选：P95 21.3s 偏慢，先做槽位解析「规则优先 + 小模型兜底」，再谈流式。
 5. 可选：出一版只写「Java 后端开发实习生」的简历，AI Agent 只作为项目亮点。
 
 ## 已知坑
 
-- **GitHub 从本机/agent 网络访问不稳定**：`git push github` 会超时；网页能打开时用 Upload files。
+- **GitHub 从本机/agent 网络访问不稳定**：`git push github` 会超时；网页能打开时用 Upload files。2026-10-29 直连成功过一次，可重试 `git push github master --force`。
 - **Streamlit Cloud 曾用 Python 3.14**：应用目前能跑；若重部署报 onnxruntime/fastembed，改成 3.11。
 - **Secrets 占位符**：`postgres.xxxx`、`你的密码`、`sk-` 必须换成真实值；已配置成功。
 - **GitHub 仓库里有 `db/迁移/`**：不影响运行，规范路径应为 `db/migrations/`。
