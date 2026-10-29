@@ -93,6 +93,7 @@ def process(prompt: str) -> None:
     if st.session_state.turn == 0:
         payload["slots"] = {}
         payload["citations"] = []
+        payload["intent"] = ""
 
     config = {"configurable": {"thread_id": st.session_state.thread_id}}
     try:

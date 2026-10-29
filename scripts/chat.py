@@ -34,6 +34,7 @@ def main() -> None:
         if first_turn:
             payload["citations"] = []
             payload["slots"] = {}
+            payload["intent"] = ""
             first_turn = False
 
         result = graph.invoke(payload, config)

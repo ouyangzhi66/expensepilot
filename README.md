@@ -25,8 +25,9 @@
 Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pgvector
                     │
                     ├──► budget_check ──► Postgres
+                    ├──► invoice_check ──► Postgres
                     ├──► voucher_create ──► Postgres
-                    └──► ask_human ──► 待办 / 审计日志
+                    └──► escalate_to_human ──► 工单 / 审计日志
 ```
 
 ## 快速开始
@@ -145,11 +146,19 @@ python scripts/ask.py "李四，上海，2026-10-12到2026-10-13，住宿5000，
 
 超预算/代报/低置信时调用 `escalate_to_human` 生成工单，不直接出凭证；每次工具调用写入 `audit_logs`。
 
+## 端到端评测（D09）
+
+```powershell
+python scripts/eval_agent.py
+```
+
+15 条场景全部通过（15/15），结果见 [eval/results_d09.csv](eval/results_d09.csv)。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
 |---|---|---|
-| 任务完成率 | ≥85% | TODO |
+| 任务完成率 | ≥85% | 15/15（D09） |
 | 凭证字段完整率 | ≥95% | 8/8（D05） |
 | 超限 / 越权拦截率 | 100% | TODO |
 | RAG 引用命中率 | ≥90% | 7/7（D02） |
@@ -169,7 +178,7 @@ python scripts/ask.py "李四，上海，2026-10-12到2026-10-13，住宿5000，
 - [x] D06 多轮槽位 + 缺信息追问
 - [x] D07 Streamlit happy path
 - [x] D08 人在回路 + 审计日志
-- [ ] D09 15 条评测 + top-3 修复
+- [x] D09 15 条评测 + top-3 修复
 - [ ] D10 部署 / README / 3 分钟视频
 
 ### 加固（D11-D21）

@@ -1,11 +1,16 @@
-id,type,input,expected_tools,expected_outcome,notes
-C01,normal,"上周去深圳出差2天，高铁320，酒店860，餐费260，帮我报销","policy_search,budget_check,voucher_create","生成凭证草稿并引用住宿/餐补条款","正常场景"
-C02,over_limit,"我在上海住800一晚，报了2晚","policy_search,budget_check,ask_human","识别住宿超标并转人工","住宿上限500/晚"
-C03,missing_invoice,"打车120，发票丢了怎么办","policy_search,ask_human","说明无票处理规则并转人工","缺票"
-C04,ambiguous,"帮我报销一下","ask_human","追问城市/天数/费用类型","槽位缺失"
-C05,unauthorized,"帮我同事张三报一下餐费","policy_search,ask_human","拒绝代报并转人工","越权"
-C06,policy_qa,"下周去北京出差3天，先帮我看看住宿和餐补标准","policy_search","回答住宿500/晚、餐补100/天，并引用条款","纯制度问答，不生成凭证"
-C07,over_limit_meal,"请客户吃饭花了1200，6个人","policy_search,budget_check,ask_human","提示人均200需事前申请，转人工","招待餐"
-C08,invoice_mismatch,"发票金额800，但我实际付了1000，按1000报","policy_search,ask_human","指出票面与申报不一致，转人工","发票校验 v2 再做自动比对"
-C09,policy_qa,"住宿标准是多少","policy_search","回答城市分档与超标规则","最短制度问答"
-C10,duplicate,"这张发票上个月好像报过了，还能报吗","policy_search,ask_human","按发票号查重，转人工核查","重复报销"
+id,type,input,expected_tools,must_contain,must_not_contain,expected_policy,notes
+C01,normal,"张三，上海，2026-10-12到2026-10-13，住宿800，帮我报销并生成凭证草稿","policy_search,budget_check,voucher_create","凭证号|POL-001","已转人工",POL-001,正常住宿
+C02,over_budget,"李四，上海，2026-10-12到2026-10-13，住宿5000，帮我生成凭证草稿","policy_search,budget_check,escalate_to_human","超标|工单","凭证号",POL-001,超预算转人工
+C03,missing_invoice,"张三，上海，2026-10-12到2026-10-13，住宿800，没有发票，怎么处理","policy_search","POL-005|200","",POL-005,无票处理
+C04,ambiguous,"帮我报销","","还差","凭证号",,槽位缺失
+C05,unauthorized,"我要替同事张三报销上海住宿800，2026-10-12到2026-10-13","escalate_to_human","工单|代","凭证号",,代报转人工
+C06,policy_qa,"住宿标准是多少","policy_search","500|350","",POL-001,制度问答
+C07,client_meal,"王五，广州，2026-10-15到2026-10-15，请客户吃饭1200，6个人","policy_search","POL-002|200","",POL-002,客户招待
+C08,invoice_mismatch,"张三，上海，2026-10-12到2026-10-13，住宿800，但发票金额只有600","invoice_check","POL-004|不一致","",POL-004,票面不符
+C09,duplicate,"王五，广州，2026-10-16到2026-10-16，住宿700，发票号INV-20261012-01，帮我报销","invoice_check","POL-009|重复","",POL-009,重复发票
+C10,normal_transport,"赵六，北京，2026-10-20到2026-10-22，机票700，帮我报销并生成凭证","policy_search,budget_check,voucher_create","POL-003|凭证号","",POL-003,正常交通
+C11,meal_over,"钱七，深圳，2026-10-20到2026-10-21，餐费260，帮我报销","policy_search,budget_check","POL-002","",POL-002,餐补超标
+C12,policy_qa_invoice,"发票抬头错了还能报吗","policy_search","POL-004","",POL-004,发票制度
+C13,budget_query,"研发部2026年10月住宿还剩多少额度","budget_check","7,100","",,预算查询
+C14,off_topic,"今天天气怎么样","","只处理|报销","凭证号",,无关问题
+C15,voucher,"张三，上海，2026-10-12到2026-10-13，住宿800，生成凭证草稿","policy_search,budget_check,voucher_create","凭证号|POL-001","已转人工",POL-001,显式生成凭证

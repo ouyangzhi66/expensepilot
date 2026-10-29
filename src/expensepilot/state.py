@@ -12,3 +12,4 @@ class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     citations: list[str]
     slots: dict[str, Any]
+    intent: str

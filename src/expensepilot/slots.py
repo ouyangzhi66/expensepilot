@@ -17,6 +17,8 @@ REQUIRED_SLOTS = (
     "amount",
 )
 
+INTENTS = {"reimburse", "policy", "budget", "other"}
+
 SLOT_QUESTIONS = {
     "employee": "报销人是谁？（姓名或工号，例如“张三”/“E001”）",
     "trip_city": "出差城市是哪里？",
@@ -89,8 +91,7 @@ def build_question(missing: list[str]) -> str:
     )
 
 
-def parse_slot_json(text: str) -> dict:
-    """Parse the slot extractor's JSON, tolerating code fences and common formats."""
+def _load_json(text: str) -> dict:
     text = text.strip()
     if text.startswith("```"):
         text = text.strip("`")
@@ -106,8 +107,11 @@ def parse_slot_json(text: str) -> dict:
         data = json.loads(text[start : end + 1])
     except json.JSONDecodeError:
         return {}
-    if not isinstance(data, dict):
-        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _normalize_slots(data: dict) -> dict:
+    data = dict(data)
 
     category = data.get("category")
     if isinstance(category, str):
@@ -122,3 +126,25 @@ def parse_slot_json(text: str) -> dict:
         return SlotUpdate.model_validate(data).model_dump(exclude_none=True)
     except ValidationError:
         return {}
+
+
+def parse_slot_json(text: str) -> dict:
+    """Parse the slot extractor's JSON, tolerating code fences and nested slots."""
+    data = _load_json(text)
+    if isinstance(data.get("slots"), dict):
+        data = data["slots"]
+    return _normalize_slots(data)
+
+
+def parse_turn_json(text: str) -> tuple[str, dict]:
+    """Parse intent + slots from one extractor response."""
+    data = _load_json(text)
+    intent = str(data.get("intent", "reimburse")).strip()
+    if intent not in INTENTS:
+        intent = "reimburse"
+
+    slots = data.get("slots")
+    if not isinstance(slots, dict):
+        slots = {key: value for key, value in data.items() if key != "intent"}
+
+    return intent, _normalize_slots(slots)

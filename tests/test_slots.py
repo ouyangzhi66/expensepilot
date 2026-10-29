@@ -4,6 +4,7 @@ from expensepilot.slots import (
     merge_slots,
     missing_slots,
     parse_slot_json,
+    parse_turn_json,
 )
 
 
@@ -41,3 +42,11 @@ def test_question_lists_missing_items() -> None:
     question = build_question(["trip_city", "amount"])
     assert "城市" in question
     assert "金额" in question
+
+
+def test_parse_turn_intent_and_slots() -> None:
+    intent, slots = parse_turn_json(
+        '{"intent":"policy","slots":{"trip_city":"上海"}}'
+    )
+    assert intent == "policy"
+    assert slots == {"trip_city": "上海"}
