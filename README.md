@@ -190,14 +190,17 @@ python scripts/eval_agent.py
 - [x] D10 部署 + README
 - [ ] D10 3 分钟视频
 
-### 加固（D11-D21）
+### 加固（按优先级，不强制全做）
 
-- [ ] 发票 OCR + 票面校验
-- [ ] 30 条评测 + 错误分类
-- [ ] Langfuse trace / 成本统计
-- [ ] Vue 3 前端（可选）
-- [ ] 1 页项目报告（Gitee Pages 或 `docs/report.md`）
-- [ ] Dockerfile / compose 一键起（面试讲容器化）
+- [ ] P1 30 条评测 + 错误分类
+- [ ] P1 Dockerfile / compose 一键起
+- [ ] P1 1 页项目报告（`docs/report.md`）
+- [ ] P2 MCP Server（投 AI Agent 方向再做）
+- [ ] P2 发票 OCR + 票面校验（仅财务 AI 方向）
+- [ ] P3 Langfuse trace / 成本统计（可选）
+- [ ] P3 Vue 3 前端（可选，不建议现在做）
+
+> 先投递；P1 做完即可。P2/P3 只在目标 JD 明确要求时再做。
 
 ## 每日 Gitee 流程
 
