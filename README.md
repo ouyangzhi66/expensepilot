@@ -95,6 +95,14 @@ python scripts/search_policy.py "上海住宿 800 能报吗"
 
 默认用本地 `BAAI/bge-small-zh-v1.5`（512 维，约 100MB），不用 API key。首次运行会下载模型；国内网络慢时先设 `$env:HF_ENDPOINT="https://hf-mirror.com"`。
 
+## Agent（D03）
+
+```powershell
+python scripts/ask.py "上海住宿800能报吗"
+```
+
+Agent 先调用 `policy_search` 查条款，再基于条款回答；回答里真正引用的 `POL-xxx` 会记进 `citations`。
+
 ## 评测
 
 | 指标 | 目标 | 当前 |
@@ -113,7 +121,7 @@ python scripts/search_policy.py "上海住宿 800 能报吗"
 
 - [x] D01 数据表 / 合成数据 / 10 条评测集
 - [x] D02 制度 RAG：切分、embedding、pgvector、引用
-- [ ] D03 LangGraph 骨架 + `policy_search`
+- [x] D03 LangGraph 骨架 + `policy_search`
 - [ ] D04 `budget_check` + seed SQL
 - [ ] D05 `voucher_create` + JSON Schema
 - [ ] D06 多轮槽位 + 缺信息追问

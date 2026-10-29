@@ -14,6 +14,9 @@ os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
+MODEL_NAME = os.getenv("MODEL_NAME", "deepseek-chat").strip()
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-zh-v1.5").strip()
 EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "512"))
 FASTEMBED_CACHE_PATH = os.getenv(
