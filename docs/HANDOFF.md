@@ -4,15 +4,15 @@
 
 ## 一句话状态
 
-ExpensePilot 财务报销 Agent 已完成 D01–D09，D10 部署成功，**只剩 3 分钟演示视频**。
+ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、tag v0.1.0），**只剩 3 分钟演示视频**。
 
 ## 关键路径与链接
 
 - 项目目录：`D:\deeekseek工作区\expensepilot`
-- 线上应用：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app
+- 线上应用：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app（2026-10-29 复验：首页正常渲染）
 - Gitee（主仓库）：https://gitee.com/ouyangzhi66/expensepilot
 - GitHub（部署镜像）：https://github.com/ouyangzhi66/expensepilot
-- 最新 Gitee 提交：`01c9649`（D10 部署日志）
+- 最新提交：`git log -1`（D10 收尾：指标回填 + 线上复验 + tag）
 - 简历新版：`D:\简历\2023-软件工程-欧阳智-Java后端-简历-v2.pdf`
 - 简历脚本：`D:\deeekseek工作区\build_resume.py`
 
@@ -40,7 +40,7 @@ ExpensePilot 财务报销 Agent 已完成 D01–D09，D10 部署成功，**只�
 | D07 | Streamlit UI | AppTest 通过 |
 | D08 | 转人工 + 审计 | 工单 pending，audit_logs 留痕 |
 | D09 | 15 条端到端评测 | 15/15 通过 |
-| D10 | 部署 + README | 线上可访问，视频待录 |
+| D10 | 部署 + README + 视频 | 线上可访问；指标回填（拦截 6/6、P95 21.3s）；tag `v0.1.0`；视频待录 |
 
 ## 常用命令
 
@@ -58,10 +58,11 @@ streamlit run app.py
 ## 待办
 
 1. 按 `docs/demo-script.md` 录 3 分钟视频，传 B 站/YouTube。
-2. 把视频链接填进 README，D10 打勾，关 D10 issue：
+2. 把视频链接填进 README「演示视频」，D10 打勾，关 D10 issue：
    https://gitee.com/ouyangzhi66/expensepilot/issues/IKQRWQ
 3. GitHub 上的 README 还是旧版；GitHub 能打开时，把最新 `README.md` 再上传一次。
-4. 可选：出一版只写「Java 后端开发实习生」的简历，AI Agent 只作为项目亮点。
+4. 可选：P95 21.3s 偏慢，先做槽位解析「规则优先 + 小模型兜底」，再谈流式。
+5. 可选：出一版只写「Java 后端开发实习生」的简历，AI Agent 只作为项目亮点。
 
 ## 已知坑
 
@@ -71,6 +72,7 @@ streamlit run app.py
 - **GitHub 仓库里有 `db/迁移/`**：不影响运行，规范路径应为 `db/migrations/`。
 - **`voucher.py` 启动时读取 `schemas/voucher.schema.json`**：这个文件必须存在。
 - **隐私**：仓库只放合成数据；真实姓名、发票、银行卡、API key、连接串不进 Git/截图。
+- **时延**：每轮先调一次 LLM 做意图/槽位解析，再跑 agent ↔ tools，P95 21.3s、均值 11.9s；别在面试里说「3 秒内」。
 
 ## 会话约定
 

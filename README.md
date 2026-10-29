@@ -34,7 +34,13 @@ Streamlit UI ──► LangGraph ──► policy_search ──► Postgres + pg
 
 线上演示：https://expensepilot-brtprbnrauirgule8zeg8y.streamlit.app
 
-Streamlit Community Cloud 部署步骤见 [docs/deploy.md](docs/deploy.md)；录视频用 [docs/demo-script.md](docs/demo-script.md)。
+Streamlit Community Cloud 部署步骤见 [docs/deploy.md](docs/deploy.md)。
+
+### 演示视频
+
+3 分钟演示（正常单 → 超限转人工 → 评测与代码）。录制脚本见 [docs/demo-script.md](docs/demo-script.md)；视频链接：待补充。
+
+> 最近一次线上复验：2026-10-29，首页正常渲染、槽位 / 引用 / 工具调用侧栏无报错。
 
 应用通过 `st.secrets` 读取 Supabase 连接串和 API key，`.env` 只用于本地。
 
@@ -168,9 +174,11 @@ python scripts/eval_agent.py
 |---|---|---|
 | 任务完成率 | ≥85% | 15/15（D09） |
 | 凭证字段完整率 | ≥95% | 8/8（D05） |
-| 超限 / 越权拦截率 | 100% | TODO |
-| RAG 引用命中率 | ≥90% | 7/7（D02） |
-| P95 时延 | ≤3s | TODO |
+| 超限 / 越权拦截率 | 100% | 6/6（D09） |
+| RAG 引用命中率 | ≥90% | 7/7（D02）、15/15（D09 端到端） |
+| P95 时延 | ≤3s | 21.3s（未达标，见下） |
+
+> 时延说明：每轮先做一次意图 / 槽位解析 LLM 调用，再走 agent ↔ tools，15 条场景均耗时 0.8–21.3s（均值 11.9s）。后续优化方向：槽位解析改成规则优先 + 小模型兜底、工具并行、首 token 流式输出。
 
 场景分布与用例见 [docs/eval.md](docs/eval.md)、[eval/cases.csv](eval/cases.csv)。
 
