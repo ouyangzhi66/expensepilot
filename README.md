@@ -58,19 +58,41 @@ Streamlit Community Cloud 部署步骤见 [docs/deploy.md](docs/deploy.md)。
 
 应用通过 `st.secrets` 读取 Supabase 连接串和 API key，`.env` 只用于本地。
 
+公开演示建议在 Secrets 里加两行，防陌生人刷额度、往库里灌工单：
+
+```toml
+DEMO_PASSWORD = "自己定一个口令"
+MAX_DEMO_TURNS = "20"
+```
+
+`DEMO_PASSWORD` 不配时应用完全开放，只适合本地。
+
 ## 快速开始
 
-### 0. 克隆
+### A. Docker 一键起（含数据库）
+
+```powershell
+Copy-Item .env.example .env      # 填 OPENAI_API_KEY
+docker compose up -d db
+docker compose run --rm app python scripts\ingest_policies.py   # 首次：制度切分入库
+docker compose up app            # http://localhost:8501
+```
+
+`db` 容器首次启动会自动执行 `db/schema.sql`、两个迁移和 `db/seed.sql`；`app` 容器带健康检查，模型缓存在命名卷里，重建不用重下。
+
+### B. 本机 Python
+
+#### 0. 克隆
 
 ```powershell
 git clone https://gitee.com/ouyangzhi66/expensepilot.git
 cd expensepilot
 ```
 
-### 1. 安装 Python 3.11
+#### 1. 安装 Python 3.11
 安装时勾选 `Add python.exe to PATH`。
 
-### 2. 装依赖
+#### 2. 装依赖
 
 ```powershell
 python -m venv .venv
@@ -79,10 +101,12 @@ pip install -r requirements.txt -r requirements-dev.txt
 Copy-Item .env.example .env
 ```
 
-### 3. 数据库（二选一）
+> `requirements.txt` 给的是带上下界的版本区间，避免哪天大版本升级把应用打挂。`requirements.lock.txt` 是本机 Windows + Python 3.11 导出的完整锁，用于复现本地环境；Linux / Streamlit Cloud 上未验证，云端仍按 `requirements.txt` 安装。
 
-- **A. Supabase（推荐，免 Docker）**：新建项目 → SQL Editor 执行 `create extension if not exists vector;` → 把 Session Pooler 连接串填到 `.env` 的 `DATABASE_URL`。
-- **B. 本地 Docker**：`docker compose up -d db`。
+#### 3. 数据库（二选一）
+
+- **Supabase（推荐，免 Docker）**：新建项目 → SQL Editor 执行 `create extension if not exists vector;` → 把 Session Pooler 连接串填到 `.env` 的 `DATABASE_URL`。
+- **本地 Docker**：`docker compose up -d db`。
 
 验证连接：
 
@@ -92,25 +116,27 @@ python scripts/db_check.py
 
 看到 PostgreSQL 版本和 `pgvector: True` 即成功。
 
-### 4. 初始化表和数据
+#### 4. 初始化表和数据
 
 在 Supabase SQL Editor 依次执行：
 
 1. `db/schema.sql`
-2. `db/seed.sql`（会清空这 4 张表，仅用于演示数据）
+2. `db/migrations/002_policy_chunks.sql`
+3. `db/migrations/003_audit_and_approvals.sql`
+4. `db/seed.sql`（会清空这 4 张表，仅用于演示数据）
 
-### 5. 自检
+#### 5. 自检
 
 ```powershell
 .\scripts\check.ps1
 ```
 
-### 6. 分支与远程
+#### 6. 分支与远程
 
 - 主分支：`master`（Gitee 默认）
 - 远程：`origin` → `https://gitee.com/ouyangzhi66/expensepilot.git`
 
-> Gitee 不跑 GitHub Actions。`.github/workflows/ci.yml` 只在以后镜像到 GitHub 时用；日常用 `scripts/check.ps1`，Gitee Go 可选，不影响交付。
+> `.github/workflows/ci.yml` 在 GitHub 镜像上跑（`master` / `main` 都触发）；Gitee 不跑 Actions，日常用 `scripts/check.ps1`。
 
 ## 制度 RAG（D02）
 
@@ -174,6 +200,14 @@ python scripts/ask.py "李四，上海，2026-10-12到2026-10-13，住宿5000，
 
 超预算/代报/低置信时调用 `escalate_to_human` 生成工单，不直接出凭证；每次工具调用写入 `audit_logs`。
 
+留痕可以核对，不是只有文档说法：
+
+```powershell
+python scripts\audit_report.py 5
+```
+
+输出样例（真实库数据）见 [docs/audit-evidence.md](docs/audit-evidence.md)：工单号、原因（带 POL 编号）、金额、状态，以及按工具聚合的审计计数。
+
 ## 端到端评测（D09）
 
 ```powershell
@@ -196,10 +230,12 @@ python scripts/eval_agent.py
 
 场景分布与用例见 [docs/eval.md](docs/eval.md)、[eval/cases.csv](eval/cases.csv)。
 
+> 样本量说明：15 条用例（RAG 子集 7 条）是自建的合成场景，单人标注、无二次复核，用于回归和主路径验证；「100%」是这 15 条上的结果，不是线上准确率。
+
 ## 已知限制
 
-- 公开演示没有鉴权和频控：任何人都能触发工单与审计写库，正式部署需要加口令与限流。
 - 会话状态在进程内存里（`MemorySaver`），应用重启或多实例时多轮上下文会丢。
+- 公开演示默认走「口令 + 单会话轮数上限」两道闸；不配 `DEMO_PASSWORD` 时完全开放，只适合本地。
 - 评测是 15 条自建合成用例（RAG 子集 7 条），没有人工双标，只能说明主路径可用，不代表线上准确率。
 - P95 21.3s，没有流式输出；慢在每轮多一次意图解析的 LLM 调用。
 - Streamlit 免费版会休眠，首次打开要唤醒，冷启动还要下载 embedding 模型。
@@ -223,7 +259,7 @@ python scripts/eval_agent.py
 ### 后续加固（按优先级，不强制全做）
 
 - [ ] P1 30 条评测 + 错误分类
-- [ ] P1 Dockerfile / compose 一键起
+- [x] P1 Dockerfile / compose 一键起（含数据库初始化）
 - [ ] P1 1 页项目报告（`docs/report.md`）
 - [ ] P2 MCP Server（把工具暴露给其他 Agent 客户端）
 - [ ] P2 发票 OCR + 票面金额校验
@@ -247,18 +283,20 @@ python scripts/eval_agent.py
 
 ```text
 expensepilot/
-├─ app.py                 # Streamlit 页面
+├─ app.py                 # Streamlit 页面（含演示口令闸）
 ├─ src/expensepilot/      # Agent 图 / 槽位 / 工具 / 审计
 ├─ db/                    # schema.sql / seed.sql / migrations
 ├─ schemas/               # voucher.schema.json
 ├─ eval/                  # 测试集与评测脚本
-├─ docs/                  # 部署、演示脚本、日志、评测、ADR
-├─ scripts/               # check.ps1 本地自检
-├─ tests/                 # pytest
+├─ docs/                  # 部署、演示脚本、日志、评测、审计证据、ADR
+├─ scripts/               # 自检 / 演示 / 评测 / 审计查询
+├─ tests/                 # pytest（16 条，全 mock 不依赖数据库）
+├─ Dockerfile             # 应用镜像（python:3.11-slim）
+├─ requirements.lock.txt  # 可复现构建用的完整版本锁
 ├─ runtime.txt            # Streamlit Cloud Python 版本
 ├─ packages.txt           # 系统依赖（libgomp1）
 ├─ .github/               # GitHub 镜像用 CI + issue 模板
-└─ docker-compose.yml     # Postgres + pgvector（可选）
+└─ docker-compose.yml     # Postgres + pgvector + app（一键起）
 ```
 
 ## 数据与隐私

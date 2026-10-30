@@ -16,3 +16,4 @@
 | 2026-10-29 | D09 | 15 条端到端评测 | 15/15 通过；新增意图路由、invoice_check，修 3 类失败 | - | D10 部署 | `cd127c1` |
 | 2026-10-29 | D10 | 部署 + README + 视频 | Streamlit Cloud 部署成功，Live Demo 已加；3 分钟视频待录 | - | 视频 / 收尾 | `61a2aee` |
 | 2026-10-29 | D10 | 收尾：线上复验 + 截图 + 双远端对齐 | 云端正常单 / 异常单复验通过，截图入 `docs/screenshots/`；Gitee 与 GitHub 对齐到同一提交；tag `v0.1.0` | 视频未录 | 录 3 分钟视频并填链接 | `v0.1.0` |
+| 2026-10-30 | 加固 | 演示保护 / CI / 依赖 / Docker / 审计证据 | 口令 + 轮数上限、CI 在 master 跑绿（此前从未触发）、依赖加上下界并出锁、compose 一键起、`audit_report.py` + 证据文档；顺手修 policy 轮误落槽位 | Docker 未实测（本机没装） | 录视频；线上配 `DEMO_PASSWORD` | 见 git log |

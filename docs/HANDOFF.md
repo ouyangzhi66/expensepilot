@@ -1,10 +1,10 @@
 # ExpensePilot 项目交接
 
-> 新会话先读这份文件，再继续。最后更新：2026-10-29
+> 新会话先读这份文件，再继续。最后更新：2026-10-30
 
 ## 一句话状态
 
-ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、tag v0.1.0），**只剩 3 分钟演示视频**。
+ExpensePilot 财务报销 Agent 已完成 D01–D10 并做过一轮加固（演示口令、CI、依赖锁、Docker、审计证据），**只剩 3 分钟演示视频**。
 
 ## 关键路径与链接
 
@@ -24,6 +24,7 @@ ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、ta
 - LLM：DeepSeek `deepseek-chat`，OpenAI 兼容接口
 - embedding：`BAAI/bge-small-zh-v1.5`（512 维，本地 fastembed）
 - Streamlit Cloud 用 `st.secrets`；本地用 `.env`，`.env` 不提交
+- 演示保护：`DEMO_PASSWORD`（不配则完全开放）+ `MAX_DEMO_TURNS`（默认 20）
 
 ## 已完成
 
@@ -39,6 +40,7 @@ ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、ta
 | D08 | 转人工 + 审计 | 工单 pending，audit_logs 留痕 |
 | D09 | 15 条端到端评测 | 15/15 通过 |
 | D10 | 部署 + README + 视频 | 线上可访问；指标回填（拦截 6/6、P95 21.3s）；tag `v0.1.0`；视频待录 |
+| 加固 | 演示口令 / CI / 依赖 / Docker / 审计证据 | 口令 + 轮数上限、CI 在 master 上跑绿、依赖锁、compose 一键起、`docs/audit-evidence.md` |
 
 ## 常用命令
 
@@ -48,6 +50,7 @@ cd "D:\deeekseek工作区\expensepilot"
 python scripts\ask.py "住宿标准是多少"
 python scripts\chat.py
 python scripts\eval_agent.py
+python scripts\audit_report.py 5
 .\.venv\Scripts\pytest.exe -q
 .\.venv\Scripts\ruff.exe check .
 streamlit run app.py
@@ -58,8 +61,10 @@ streamlit run app.py
 1. 按 `docs/demo-script.md` 录 3 分钟视频，传 B 站/YouTube。
 2. 把视频链接填进 README「演示视频」，D10 打勾，关 D10 issue：
    https://gitee.com/ouyangzhi66/expensepilot/issues/IKQRWQ
-3. GitHub 镜像已对齐（`git push github master --force`，`src/` 与本地一致）；下次改动后记得再同步一次。
-4. 可选：P95 21.3s 偏慢，先做槽位解析「规则优先 + 小模型兜底」，再谈流式。
+3. GitHub 镜像已对齐（`git push github master`）；下次改动后记得再同步一次。
+4. 去 Streamlit Secrets 加 `DEMO_PASSWORD`（和 `MAX_DEMO_TURNS`），否则线上仍是完全开放。
+5. Docker 路径本机没装 Docker，`docker compose up` 未实测；第一次跑要留意 db 初始化和 `ingest_policies.py`。
+6. 可选：P95 21.3s 偏慢，先做槽位解析「规则优先 + 小模型兜底」，再谈流式。
 
 ## 已知坑
 
@@ -67,8 +72,9 @@ streamlit run app.py
 - **Streamlit Cloud 曾用 Python 3.14**：应用目前能跑；若重部署报 onnxruntime/fastembed，改成 3.11。
 - **Secrets 占位符**：`postgres.xxxx`、`你的密码`、`sk-` 必须换成真实值；已配置成功。
 - **GitHub 仓库里有 `db/迁移/`**：不影响运行，规范路径应为 `db/migrations/`。（2026-10-30 强推对齐后已不存在）
-- **公开 demo 无鉴权且会写库**：任何人点一下就能造出工单和审计记录；对外分享前最好加口令或只读模式。
+- **公开 demo 无鉴权且会写库**：代码已加 `DEMO_PASSWORD` 闸，但**线上 Secrets 还没配**，等于仍然开放；配完要 Reboot。
 - **免费版会休眠**：访客先看到唤醒按钮，冷启动还要下 embedding 模型；首轮慢属正常。
+- **意图解析不再给 policy/budget 轮落槽位**：改的是 `graph.py` 的 `extract_node`，别再改回去，否则侧栏会出现半截报销信息。
 - **`voucher.py` 启动时读取 `schemas/voucher.schema.json`**：这个文件必须存在。
 - **隐私**：仓库只放合成数据；真实姓名、发票、银行卡、API key、连接串不进 Git/截图。
 - **时延**：每轮先调一次 LLM 做意图/槽位解析，再跑 agent ↔ tools，P95 21.3s、均值 11.9s；对外一律用实测数据，不说「3 秒内」。

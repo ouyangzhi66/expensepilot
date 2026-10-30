@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+.venv-lock
+__pycache__
+*.py[cod]
+.cache
+.pytest_cache
+.ruff_cache
+.env
+.env.example
+.streamlit/secrets.toml
+docs/screenshots
+requirements.lock.txt

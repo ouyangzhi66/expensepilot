@@ -17,6 +17,8 @@ SECRET_KEYS = (
     "EMBEDDING_DIM",
     "HF_ENDPOINT",
     "FASTEMBED_CACHE_PATH",
+    "DEMO_PASSWORD",
+    "MAX_DEMO_TURNS",
 )
 
 
@@ -57,3 +59,6 @@ EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "512"))
 FASTEMBED_CACHE_PATH = os.getenv(
     "FASTEMBED_CACHE_PATH", str(DEFAULT_FASTEMBED_CACHE)
 )
+# 公开演示保护：设了 DEMO_PASSWORD 才启用口令；每次会话最多 MAX_DEMO_TURNS 轮。
+DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "").strip()
+MAX_DEMO_TURNS = int(os.getenv("MAX_DEMO_TURNS", "20"))

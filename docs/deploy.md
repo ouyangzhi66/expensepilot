@@ -39,9 +39,15 @@ MODEL_NAME = "deepseek-chat"
 EMBEDDING_MODEL = "BAAI/bge-small-zh-v1.5"
 EMBEDDING_DIM = "512"
 HF_ENDPOINT = "https://hf-mirror.com"
+
+# 公开演示保护（建议必填）
+DEMO_PASSWORD = "自己定一个口令"
+MAX_DEMO_TURNS = "20"
 ```
 
 保存后点 **Reboot app**。
+
+`DEMO_PASSWORD` 生效后，打开应用先输口令；`MAX_DEMO_TURNS` 限制单会话轮数，防止陌生人白刷 API 额度、往 `approvals` 里灌工单。两行都不配时应用完全开放。
 
 Secrets 只存在 Streamlit Cloud，不会进入 Git 仓库。
 

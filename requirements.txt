@@ -1,8 +1,8 @@
-langgraph>=0.2
-langchain-openai>=0.2
-psycopg[binary]>=3.2
-pgvector>=0.3
-streamlit>=1.39
-python-dotenv>=1.0
-fastembed>=0.4
-jsonschema>=4.23
+langgraph>=1.2,<2.0
+langchain-openai>=1.7,<2.0
+psycopg[binary]>=3.3,<4.0
+pgvector>=0.5,<0.6
+streamlit>=1.66,<2.0
+python-dotenv>=1.2,<2.0
+fastembed>=0.9,<1.0
+jsonschema>=4.26,<5.0

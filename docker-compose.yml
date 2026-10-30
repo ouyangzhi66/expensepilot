@@ -1,3 +1,8 @@
+# 本地一键起：Postgres(pgvector) + Streamlit
+#   1. cp .env.example .env  并填 OPENAI_API_KEY
+#   2. docker compose up -d db
+#   3. docker compose run --rm app python scripts/ingest_policies.py   # 首次：制度切分入库
+#   4. docker compose up app   → http://localhost:8501
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -9,6 +14,36 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # 首次初始化（空数据卷）时按文件名顺序执行
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/migrations/002_policy_chunks.sql:/docker-entrypoint-initdb.d/02-policy-chunks.sql:ro
+      - ./db/migrations/003_audit_and_approvals.sql:/docker-entrypoint-initdb.d/03-audit.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/04-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U expense -d expense"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://expense:expense@db:5432/expense
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?请先在 .env 里设置 OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.deepseek.com/v1}
+      MODEL_NAME: ${MODEL_NAME:-deepseek-chat}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      # 容器里默认缓存在 /tmp，指到挂载卷上才能跨重建复用模型
+      FASTEMBED_CACHE_PATH: /app/.cache/fastembed
+    ports:
+      - "8501:8501"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # 复用已下载的 embedding 模型，避免每次重建都重下
+      - fastembed:/app/.cache/fastembed
 
 volumes:
   pgdata:
+  fastembed:

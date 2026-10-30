@@ -149,10 +149,11 @@ def build_graph():
         response = slot_llm.invoke([SystemMessage(content=prompt)])
         content = response.content if isinstance(response.content, str) else ""
         intent, update = parse_turn_json(content)
-        return {
-            "slots": merge_slots(dict(state.get("slots", {})), update),
-            "intent": intent,
-        }
+        current = dict(state.get("slots", {}))
+        if intent != "reimburse":
+            # 制度 / 预算 / 闲聊轮不落槽位，避免侧栏留下半截报销信息
+            return {"slots": current, "intent": intent}
+        return {"slots": merge_slots(current, update), "intent": intent}
 
     def ask_node(state: AgentState) -> dict:
         missing = missing_slots(dict(state.get("slots", {})))

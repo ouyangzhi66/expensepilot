@@ -1,5 +1,6 @@
 """ExpensePilot Streamlit UI: chat + slots + tool trace + voucher draft."""
 
+import hmac
 import json
 import sys
 from pathlib import Path
@@ -11,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
+from expensepilot.config import DEMO_PASSWORD, MAX_DEMO_TURNS
 from expensepilot.graph import build_graph
 from expensepilot.slots import REQUIRED_SLOTS, missing_slots
 
@@ -19,6 +21,29 @@ st.set_page_config(
     page_icon="🧾",
     layout="wide",
 )
+
+TURN_LIMIT = MAX_DEMO_TURNS if DEMO_PASSWORD else 0
+
+
+def demo_gate() -> None:
+    """公开演示加一道口令，避免陌生人白刷 API 额度、往库里灌工单。"""
+    if not DEMO_PASSWORD or st.session_state.get("demo_ok"):
+        return
+
+    st.title("🧾 ExpensePilot · 财务报销 Agent")
+    st.caption("演示环境，请输入访问口令")
+    with st.form("demo-gate"):
+        password = st.text_input("访问口令", type="password")
+        submitted = st.form_submit_button("进入", use_container_width=True)
+    if submitted:
+        if hmac.compare_digest(password.strip(), DEMO_PASSWORD):
+            st.session_state.demo_ok = True
+            st.rerun()
+        st.error("口令不正确")
+    st.stop()
+
+
+demo_gate()
 
 SLOT_LABELS = {
     "employee": "报销人",
@@ -88,6 +113,12 @@ def slot_display(key: str):
 
 
 def process(prompt: str) -> None:
+    if TURN_LIMIT and st.session_state.turn >= TURN_LIMIT:
+        st.warning(
+            f"演示会话已达 {TURN_LIMIT} 轮上限，点左侧「重新开始」可以重置。"
+        )
+        return
+
     st.session_state.history.append(("user", prompt))
     payload: dict = {"messages": [HumanMessage(content=prompt)]}
     if st.session_state.turn == 0:
@@ -150,6 +181,10 @@ with st.sidebar:
     if st.button("重新开始", use_container_width=True):
         new_session()
         st.rerun()
+
+    if TURN_LIMIT:
+        left = max(TURN_LIMIT - st.session_state.turn, 0)
+        st.caption(f"演示模式 · 剩余 {left} 轮")
 
     st.divider()
     st.subheader("槽位")
