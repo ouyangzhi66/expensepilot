@@ -13,8 +13,6 @@ ExpensePilot 财务报销 Agent 已完成 D01–D10（部署、指标回填、ta
 - Gitee（主仓库）：https://gitee.com/ouyangzhi66/expensepilot
 - GitHub（部署镜像）：https://github.com/ouyangzhi66/expensepilot（2026-10-29 已与 Gitee 对齐到同一提交）
 - 最新提交：`git log -1`（D10 收尾：指标回填 + 线上复验 + tag）
-- 简历新版：`D:\简历\2023-软件工程-欧阳智-Java后端-简历-v2.pdf`
-- 简历脚本：`D:\deeekseek工作区\build_resume.py`
 
 ## 环境
 
@@ -62,7 +60,6 @@ streamlit run app.py
    https://gitee.com/ouyangzhi66/expensepilot/issues/IKQRWQ
 3. GitHub 镜像已对齐（`git push github master --force`，`src/` 与本地一致）；下次改动后记得再同步一次。
 4. 可选：P95 21.3s 偏慢，先做槽位解析「规则优先 + 小模型兜底」，再谈流式。
-5. 可选：出一版只写「Java 后端开发实习生」的简历，AI Agent 只作为项目亮点。
 
 ## 已知坑
 
@@ -72,10 +69,11 @@ streamlit run app.py
 - **GitHub 仓库里有 `db/迁移/`**：不影响运行，规范路径应为 `db/migrations/`。
 - **`voucher.py` 启动时读取 `schemas/voucher.schema.json`**：这个文件必须存在。
 - **隐私**：仓库只放合成数据；真实姓名、发票、银行卡、API key、连接串不进 Git/截图。
-- **时延**：每轮先调一次 LLM 做意图/槽位解析，再跑 agent ↔ tools，P95 21.3s、均值 11.9s；别在面试里说「3 秒内」。
+- **时延**：每轮先调一次 LLM 做意图/槽位解析，再跑 agent ↔ tools，P95 21.3s、均值 11.9s；对外一律用实测数据，不说「3 秒内」。
 
 ## 会话约定
 
 - 下载/缓存尽量放 D 盘。
 - 涉及个人隐私和财产的内容一律不上传。
+- **这份文件会进公开仓库**：只写项目本身，不写与项目无关的个人安排。
 - 回答用中文，步骤要具体、可执行。

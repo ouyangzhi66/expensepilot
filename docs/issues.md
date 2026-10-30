@@ -110,9 +110,9 @@ Commit：`feat(agent): human approval and audit log`
 产出：`eval/run_eval.py`、更新 `docs/eval.md`
 Commit：`test(eval): add 15-case harness`
 
-## D10 部署 + 作品化
+## D10 部署 + 文档
 
-目标：公网能点开，面试能讲。
+目标：公网能点开，别人能照着跑通。
 
 - [ ] Streamlit Cloud 公网可访问
 - [ ] README 有架构 / 评测 / quickstart

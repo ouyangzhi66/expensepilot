@@ -210,17 +210,17 @@ python scripts/eval_agent.py
 - [x] D10 部署 + README
 - [ ] D10 3 分钟视频
 
-### 加固（按优先级，不强制全做）
+### 后续加固（按优先级，不强制全做）
 
 - [ ] P1 30 条评测 + 错误分类
 - [ ] P1 Dockerfile / compose 一键起
 - [ ] P1 1 页项目报告（`docs/report.md`）
-- [ ] P2 MCP Server（投 AI Agent 方向再做）
-- [ ] P2 发票 OCR + 票面校验（仅财务 AI 方向）
-- [ ] P3 Langfuse trace / 成本统计（可选）
-- [ ] P3 Vue 3 前端（可选，不建议现在做）
+- [ ] P2 MCP Server（把工具暴露给其他 Agent 客户端）
+- [ ] P2 发票 OCR + 票面金额校验
+- [ ] P3 Langfuse trace / 成本统计
+- [ ] P3 Vue 3 前端
 
-> 先投递；P1 做完即可。P2/P3 只在目标 JD 明确要求时再做。
+> P1 是通用加固，先做；P2/P3 视实际使用场景再定。
 
 ## 每日 Gitee 流程
 
@@ -231,7 +231,7 @@ python scripts/eval_agent.py
 
 10 个 issue 的标题和正文见 [docs/issues.md](docs/issues.md)。
 
-> 贡献度统计要求 `git config user.email` 与 Gitee 绑定邮箱一致。当前本机是 `1161655868@qq.com`，去 Gitee「设置 → 邮箱管理」确认已绑定，否则提交不会变绿。
+> 提交使用与 Gitee 账号绑定的邮箱（`1161655868@qq.com`），保证提交归属正确，见「设置 → 邮箱管理」。
 
 ## 仓库结构
 
