@@ -66,7 +66,9 @@ streamlit run app.py
 - **GitHub 从本机/agent 网络访问不稳定**：`git push github` 会超时；网页能打开时用 Upload files。2026-10-29 直连成功过一次，可重试 `git push github master --force`。
 - **Streamlit Cloud 曾用 Python 3.14**：应用目前能跑；若重部署报 onnxruntime/fastembed，改成 3.11。
 - **Secrets 占位符**：`postgres.xxxx`、`你的密码`、`sk-` 必须换成真实值；已配置成功。
-- **GitHub 仓库里有 `db/迁移/`**：不影响运行，规范路径应为 `db/migrations/`。
+- **GitHub 仓库里有 `db/迁移/`**：不影响运行，规范路径应为 `db/migrations/`。（2026-10-30 强推对齐后已不存在）
+- **公开 demo 无鉴权且会写库**：任何人点一下就能造出工单和审计记录；对外分享前最好加口令或只读模式。
+- **免费版会休眠**：访客先看到唤醒按钮，冷启动还要下 embedding 模型；首轮慢属正常。
 - **`voucher.py` 启动时读取 `schemas/voucher.schema.json`**：这个文件必须存在。
 - **隐私**：仓库只放合成数据；真实姓名、发票、银行卡、API key、连接串不进 Git/截图。
 - **时延**：每轮先调一次 LLM 做意图/槽位解析，再跑 agent ↔ tools，P95 21.3s、均值 11.9s；对外一律用实测数据，不说「3 秒内」。
