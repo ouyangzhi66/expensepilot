@@ -227,7 +227,7 @@ python scripts/eval_agent.py
 1. 开工：把当天 issue 打开，写一句“今日目标”。
 2. 开发：每 30-45 分钟 commit 一次，Conventional Commits。
 3. 收工：更新 `docs/log.md`，关闭 issue，README 进度打勾。
-4. 每天 push 到 `master`；每周日打 tag（`v0.1.0`），写 Release notes。
+4. 每天 push 到 `master`；每个里程碑打一个 tag，写 Release notes。
 
 10 个 issue 的标题和正文见 [docs/issues.md](docs/issues.md)。
 
@@ -238,7 +238,7 @@ python scripts/eval_agent.py
 ```text
 expensepilot/
 ├─ app.py                 # Streamlit 页面
-├─ src/expensepilot/      # Agent / tools / api
+├─ src/expensepilot/      # Agent 图 / 槽位 / 工具 / 审计
 ├─ db/                    # schema.sql / seed.sql / migrations
 ├─ schemas/               # voucher.schema.json
 ├─ eval/                  # 测试集与评测脚本

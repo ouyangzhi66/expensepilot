@@ -12,7 +12,7 @@
 如果导入失败，也可以新建空仓库后手动推：
 
 ```powershell
-cd "D:\deeekseek工作区\expensepilot"
+cd expensepilot
 git remote add github https://github.com/<你的用户名>/expensepilot.git
 git push github master
 ```

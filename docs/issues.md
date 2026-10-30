@@ -107,7 +107,7 @@ Commit：`feat(agent): human approval and audit log`
 - [ ] 指标：完成率 / 字段完整率 / 拦截率 / 引用命中
 - [ ] 错误分类 + top3 修复
 
-产出：`eval/run_eval.py`、更新 `docs/eval.md`
+产出：`scripts/eval_agent.py`、更新 `docs/eval.md`
 Commit：`test(eval): add 15-case harness`
 
 ## D10 部署 + 文档
